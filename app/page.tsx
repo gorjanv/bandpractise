@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import { Song, VoteWithDetails } from '@/types';
 import { fetchSongs, getSongVotesWithDetails, deleteSong } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
+import AuthModal from '@/components/AuthModal';
 import Link from 'next/link';
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [songs, setSongs] = useState<Song[]>([]);
   const [votesMap, setVotesMap] = useState<Record<string, VoteWithDetails[]>>({});
   const [loadingSongs, setLoadingSongs] = useState(true);
@@ -17,6 +19,10 @@ export default function Dashboard() {
   useEffect(() => {
     if (!authLoading && user) {
       loadSongs();
+      setShowAuthModal(false);
+    } else if (!authLoading && !user) {
+      setShowAuthModal(true);
+      setLoadingSongs(false);
     }
   }, [authLoading, user]);
 
@@ -98,18 +104,6 @@ export default function Dashboard() {
     );
   }
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 relative overflow-hidden flex items-center justify-center">
-        <div className="glass rounded-3xl p-12 text-center">
-          <p className="text-slate-300">Please sign in to view the dashboard</p>
-          <Link href="/" className="mt-4 inline-block px-6 py-3 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 text-white font-semibold rounded-xl">
-            Go to Login
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 relative overflow-hidden">
@@ -278,6 +272,11 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
     </div>
   );
 }

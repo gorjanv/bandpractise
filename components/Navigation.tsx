@@ -1,12 +1,20 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function Navigation() {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    // Redirect to home page after sign out
+    router.push('/');
+    router.refresh(); // Refresh to update the page state
+  };
 
   const navItems = [
     { href: '/', label: 'Dashboard', icon: '📊' },
@@ -61,7 +69,7 @@ export default function Navigation() {
                       {user.user_metadata?.name || user.email?.split('@')[0]}
                     </p>
                     <button
-                      onClick={signOut}
+                      onClick={handleSignOut}
                       className="text-xs text-slate-400 hover:text-white transition-colors"
                     >
                       Sign Out
