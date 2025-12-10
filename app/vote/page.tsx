@@ -253,9 +253,9 @@ export default function VotePage() {
               </button>
             </div>
           ) : (
-            <div className="flex gap-6 h-[calc(100vh-200px)]">
+            <div className="flex flex-col md:flex-row gap-6 md:h-[calc(100vh-200px)]">
               {/* Song List Sidebar */}
-              <div className="w-80 flex-shrink-0 glass rounded-3xl p-4 overflow-y-auto border border-white/10">
+              <div className="w-full md:w-80 flex-shrink-0 glass rounded-3xl p-4 overflow-y-auto border border-white/10 max-h-[40vh] md:max-h-none">
                 <h2 className="text-lg font-bold mb-4 bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent px-2">
                   Songs ({songs.length})
                 </h2>
@@ -321,7 +321,7 @@ export default function VotePage() {
               </div>
 
               {/* Song Detail View */}
-              <div className="flex-1">
+              <div className="flex-1 w-full md:w-auto">
                 {selectedSong ? (
                   <SongCard
                     song={selectedSong}
@@ -332,7 +332,7 @@ export default function VotePage() {
                     onDelete={handleDeleteSong}
                   />
                 ) : (
-                  <div className="h-full glass rounded-3xl p-12 flex items-center justify-center">
+                  <div className="h-full min-h-[400px] md:min-h-0 glass rounded-3xl p-12 flex items-center justify-center">
                     <div className="text-center">
                       <div className="text-6xl mb-6">🎵</div>
                       <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
