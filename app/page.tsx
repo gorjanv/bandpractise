@@ -2,14 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { Song, VoteWithDetails } from '@/types';
-import { fetchSongs, getSongVotesWithDetails, deleteSong } from '@/lib/api';
+import { fetchSongs, getSongVotesWithDetails, deleteSong, addSong } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import AuthModal from '@/components/AuthModal';
-import Link from 'next/link';
+import AddSongModal from '@/components/AddSongModal';
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [songs, setSongs] = useState<Song[]>([]);
   const [votesMap, setVotesMap] = useState<Record<string, VoteWithDetails[]>>({});
   const [loadingSongs, setLoadingSongs] = useState(true);
@@ -69,6 +70,19 @@ export default function Dashboard() {
     return 'from-red-500 to-pink-500';
   };
 
+  const handleAddSong = async (songData: Omit<Song, 'id' | 'addedAt' | 'votes' | 'addedBy'>) => {
+    try {
+      setError(null);
+      const newSong = await addSong(songData);
+      setSongs(prev => [newSong, ...prev]);
+      setShowAddModal(false);
+    } catch (err) {
+      console.error('Error adding song:', err);
+      setError('Failed to add song. Please try again.');
+      throw err;
+    }
+  };
+
   const handleDeleteSong = async (songId: string) => {
     if (!confirm('Are you sure you want to delete this song? This will also delete all votes.')) {
       return;
@@ -115,11 +129,21 @@ export default function Dashboard() {
 
       <div className="max-w-7xl mx-auto px-6 py-8 relative z-10">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-            Dashboard
-          </h1>
-          <p className="text-slate-400">View all songs and their ratings</p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
+              Dashboard
+            </h1>
+            <p className="text-slate-400">View all songs and their ratings</p>
+          </div>
+          {user && (
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="px-6 py-2.5 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/50 active:scale-95"
+            >
+              + Add Song
+            </button>
+          )}
         </div>
 
         {error && (
@@ -144,12 +168,12 @@ export default function Dashboard() {
             <p className="text-slate-300 mb-8 text-lg">
               Start adding songs to see them here!
             </p>
-            <Link
-              href="/"
-              className="inline-block px-8 py-3.5 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/50 active:scale-95"
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="px-8 py-3.5 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/50 active:scale-95"
             >
-              Add Songs
-            </Link>
+              Add First Song
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -277,6 +301,13 @@ export default function Dashboard() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
       />
+      {user && (
+        <AddSongModal
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          onAdd={handleAddSong}
+        />
+      )}
     </div>
   );
 }
