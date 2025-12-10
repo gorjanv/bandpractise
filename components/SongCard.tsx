@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Song } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SongCardProps {
   song: Song;
@@ -9,12 +10,15 @@ interface SongCardProps {
   isActive: boolean;
   initialRating?: number;
   initialComment?: string;
+  onDelete?: (songId: string) => void;
 }
 
-export default function SongCard({ song, onVote, isActive, initialRating, initialComment }: SongCardProps) {
+export default function SongCard({ song, onVote, isActive, initialRating, initialComment, onDelete }: SongCardProps) {
+  const { user } = useAuth();
   const [rating, setRating] = useState(initialRating || 5);
   const [comment, setComment] = useState(initialComment || '');
   const [showPreview, setShowPreview] = useState(false);
+  const isOwner = user && song.userId === user.id;
 
   // Update state when initial values change (when switching songs)
   useEffect(() => {
@@ -42,6 +46,20 @@ export default function SongCard({ song, onVote, isActive, initialRating, initia
     <div className="w-full max-w-2xl mx-auto rounded-3xl glass overflow-hidden border border-white/10 shadow-2xl glow transition-all duration-300">
       {/* Artwork/Image */}
       <div className="relative h-64 bg-gradient-to-br from-purple-600 via-pink-600 to-cyan-600 overflow-hidden">
+        {isOwner && onDelete && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (confirm('Are you sure you want to delete this song? This will also delete all votes.')) {
+                onDelete(song.id);
+              }
+            }}
+            className="absolute top-3 right-3 w-8 h-8 bg-red-500/90 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg z-10"
+            title="Delete song"
+          >
+            ×
+          </button>
+        )}
         <img
           src={song.artwork}
           alt={`${song.artist} - ${song.title}`}

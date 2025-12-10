@@ -142,3 +142,18 @@ export async function getUserVoteForSong(songId: string): Promise<{ rating: numb
     return null;
   }
 }
+
+// Delete a song (only if user is the owner)
+export async function deleteSong(songId: string): Promise<void> {
+  const headers = await getAuthHeaders();
+  
+  const response = await fetch(API_BASE + `/songs/${songId}`, {
+    method: 'DELETE',
+    headers,
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to delete song');
+  }
+}

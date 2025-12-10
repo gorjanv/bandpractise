@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Song, VoteWithDetails } from '@/types';
-import { fetchSongs, getSongVotesWithDetails } from '@/lib/api';
+import { fetchSongs, getSongVotesWithDetails, deleteSong } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 
@@ -61,6 +61,28 @@ export default function Dashboard() {
     if (rating >= 6) return 'from-cyan-500 to-blue-500';
     if (rating >= 4) return 'from-yellow-500 to-orange-500';
     return 'from-red-500 to-pink-500';
+  };
+
+  const handleDeleteSong = async (songId: string) => {
+    if (!confirm('Are you sure you want to delete this song? This will also delete all votes.')) {
+      return;
+    }
+
+    try {
+      setError(null);
+      await deleteSong(songId);
+      // Remove from local state
+      setSongs(prev => prev.filter(s => s.id !== songId));
+      // Remove votes if loaded
+      setVotesMap(prev => {
+        const newMap = { ...prev };
+        delete newMap[songId];
+        return newMap;
+      });
+    } catch (err: any) {
+      console.error('Error deleting song:', err);
+      setError(err.message || 'Failed to delete song');
+    }
   };
 
   if (authLoading || loadingSongs) {
@@ -140,6 +162,7 @@ export default function Dashboard() {
             {songs.map((song) => {
               const votes = votesMap[song.id] || [];
               const isLoadingVotes = loadingVotes[song.id];
+              const isOwner = user && song.userId === user.id;
 
               return (
                 <div
@@ -157,6 +180,18 @@ export default function Dashboard() {
                       }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                    {isOwner && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteSong(song.id);
+                        }}
+                        className="absolute top-3 right-3 w-8 h-8 bg-red-500/90 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg z-10"
+                        title="Delete song"
+                      >
+                        ×
+                      </button>
+                    )}
                     <div className="absolute bottom-4 left-4 right-4">
                       <h3 className="text-xl font-bold text-white mb-1 line-clamp-1">{song.title}</h3>
                       <p className="text-slate-200 text-sm mb-1">{song.artist}</p>

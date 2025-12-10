@@ -26,6 +26,7 @@ export interface DBSong {
   youtube_id: string;
   added_by: string;
   added_by_name?: string;
+  user_id?: string | null;
   added_at: string;
   created_at: string;
 }
@@ -52,6 +53,7 @@ export function dbSongToSong(dbSong: DBSong, votes: { averageRating: number; tot
     youtubeId: dbSong.youtube_id,
     addedBy: dbSong.added_by_name || dbSong.added_by || 'Unknown',
     addedAt: dbSong.added_at,
+    userId: dbSong.user_id || null,
     votes,
   };
 }

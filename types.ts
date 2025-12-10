@@ -7,6 +7,7 @@ export interface Song {
   youtubeId: string;
   addedBy: string;
   addedAt: string;
+  userId?: string | null; // ID of the user who added the song (for ownership checks)
   votes: {
     averageRating: number;
     totalVotes: number;

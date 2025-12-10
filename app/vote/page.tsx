@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Song } from '@/types';
-import { fetchSongs, addSong, submitVote, getUserVoteForSong } from '@/lib/api';
+import { fetchSongs, addSong, submitVote, getUserVoteForSong, deleteSong } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import SongCard from '@/components/SongCard';
@@ -151,6 +151,32 @@ export default function VotePage() {
     }
   };
 
+  const handleDeleteSong = async (songId: string) => {
+    if (!confirm('Are you sure you want to delete this song? This will also delete all votes.')) {
+      return;
+    }
+
+    try {
+      setError(null);
+      await deleteSong(songId);
+      // Remove from local state
+      setSongs(prev => prev.filter(s => s.id !== songId));
+      // Clear user votes for this song
+      setUserVotes(prev => {
+        const newVotes = { ...prev };
+        delete newVotes[songId];
+        return newVotes;
+      });
+      // If deleted song was selected, clear selection
+      if (selectedSongId === songId) {
+        setSelectedSongId(null);
+      }
+    } catch (err: any) {
+      console.error('Error deleting song:', err);
+      setError(err.message || 'Failed to delete song');
+    }
+  };
+
   const selectedSong = selectedSongId ? songs.find(s => s.id === selectedSongId) : null;
   const hasVoted = selectedSongId ? !!userVotes[selectedSongId] : false;
   const userVote = selectedSongId ? userVotes[selectedSongId] : null;
@@ -237,48 +263,58 @@ export default function VotePage() {
                   {songs.map((song) => {
                     const hasVotedForThis = !!userVotes[song.id];
                     const isSelected = selectedSongId === song.id;
+                    const isOwner = user && song.userId === user.id;
                     
                     return (
-                      <button
+                      <div
                         key={song.id}
-                        onClick={() => setSelectedSongId(song.id)}
-                        className={`w-full text-left p-3 rounded-xl transition-all duration-200 ${
+                        className={`relative group ${
                           isSelected
                             ? 'glass border-2 border-purple-500/50 bg-purple-500/10'
                             : hasVotedForThis
                             ? 'bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20'
                             : 'bg-slate-800/50 border border-white/5 hover:bg-slate-800 hover:border-white/10'
-                        }`}
+                        } rounded-xl transition-all duration-200`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1 min-w-0">
-                            <p className={`font-semibold truncate ${
-                              isSelected ? 'text-white' : hasVotedForThis ? 'text-emerald-300' : 'text-slate-300'
-                            }`}>
-                              {song.title}
-                            </p>
-                            <p className={`text-sm truncate ${
-                              isSelected ? 'text-slate-300' : 'text-slate-500'
-                            }`}>
-                              {song.artist}
-                            </p>
-                            {hasVotedForThis && (
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="text-xs text-emerald-400 font-semibold">
-                                  ✓ Voted: {userVotes[song.id].rating}/10
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                          {hasVotedForThis && (
-                            <div className="ml-2 flex-shrink-0">
-                              <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
-                                <span className="text-white text-xs font-bold">✓</span>
-                              </div>
+                        <button
+                          onClick={() => setSelectedSongId(song.id)}
+                          className="w-full text-left p-3 pr-10"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1 min-w-0">
+                              <p className={`font-semibold truncate ${
+                                isSelected ? 'text-white' : hasVotedForThis ? 'text-emerald-300' : 'text-slate-300'
+                              }`}>
+                                {song.title}
+                              </p>
+                              <p className={`text-sm truncate ${
+                                isSelected ? 'text-slate-300' : 'text-slate-500'
+                              }`}>
+                                {song.artist}
+                              </p>
+                              {hasVotedForThis && (
+                                <div className="flex items-center gap-2 mt-1">
+                                  <span className="text-xs text-emerald-400 font-semibold">
+                                    Voted: {userVotes[song.id].rating}/10
+                                  </span>
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      </button>
+                          </div>
+                        </button>
+                        {isOwner && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteSong(song.id);
+                            }}
+                            className="absolute top-2 right-2 w-7 h-7 bg-red-500/90 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 text-sm font-bold z-10 shadow-lg"
+                            title="Delete song"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
                     );
                   })}
                 </div>
@@ -293,6 +329,7 @@ export default function VotePage() {
                     isActive={true}
                     initialRating={userVote?.rating}
                     initialComment={userVote?.comment}
+                    onDelete={handleDeleteSong}
                   />
                 ) : (
                   <div className="h-full glass rounded-3xl p-12 flex items-center justify-center">

@@ -85,8 +85,9 @@ export async function POST(request: NextRequest) {
         artwork,
         youtube_url: youtubeUrl,
         youtube_id: youtubeId,
-        added_by: user.id,
+        added_by: user.id, // Deprecated field, kept for backward compatibility
         added_by_name: userName,
+        user_id: user.id, // Main field for ownership
         added_at: new Date().toISOString(),
       })
       .select()
