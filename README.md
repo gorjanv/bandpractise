@@ -1,36 +1,115 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎵 Band Practise - Song Voting App
 
-## Getting Started
+A Tinder-like interface for music bands to vote on songs for their next practise session. Built with Next.js, TypeScript, Tailwind CSS, and Supabase.
 
-First, run the development server:
+## Features
+
+- 🎯 **Swipe Interface**: Swipe left (✕) or right (✓) on songs to vote
+- 🎨 **Beautiful UI**: Modern, mobile-friendly interface with smooth animations
+- 🎬 **YouTube Integration**: Preview songs directly in the app
+- 👥 **Multi-user Support**: Multiple band members can vote simultaneously
+- 🔄 **Real-time Updates**: See new songs and votes as they happen
+- 📊 **Vote Tracking**: See which songs are most popular
+
+## Setup Instructions
+
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Set Up Supabase
+
+1. Create a free account at [supabase.com](https://supabase.com)
+2. Create a new project
+3. Go to **Settings** → **API** and copy:
+   - Your project URL
+   - Your `anon` public key
+
+### 3. Create Database Tables
+
+1. In your Supabase dashboard, go to **SQL Editor**
+2. Run the SQL from `supabase/schema.sql` to create the tables:
+
+```sql
+-- Copy and paste the entire contents of supabase/schema.sql
+```
+
+### 4. Configure Environment Variables
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.local.example .env.local
+   ```
+
+2. Edit `.env.local` and add your Supabase credentials:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+### 5. Run the Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Deploy to Vercel (Recommended)
 
-## Learn More
+1. Push your code to GitHub
+2. Import your repository on [Vercel](https://vercel.com)
+3. Add your environment variables in Vercel's project settings:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+4. Deploy!
 
-To learn more about Next.js, take a look at the following resources:
+### Important Notes for Deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Make sure your Supabase project allows connections from your deployment URL
+- The database schema must be set up before deployment
+- Environment variables must be configured in your hosting platform
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## How to Use
 
-## Deploy on Vercel
+1. **Enter Your Name**: When you first open the app, enter your name
+2. **Swipe Through Songs**: Swipe right (✓) to vote yes, left (✕) to vote no
+3. **Preview Songs**: Tap the "Preview" button to watch/listen on YouTube
+4. **Add Songs**: Click "+ Add Song" to add new songs for voting
+5. **View Results**: See which songs are most popular in the summary section
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+├── app/
+│   ├── api/          # API routes for songs and votes
+│   ├── page.tsx      # Main application page
+│   └── layout.tsx    # Root layout
+├── components/       # React components
+│   ├── SongCard.tsx      # Swipeable song card
+│   └── AddSongModal.tsx  # Modal for adding songs
+├── lib/
+│   ├── api.ts        # API client functions
+│   ├── supabase.ts   # Supabase client configuration
+│   ├── storage.ts    # Legacy localStorage (not used)
+│   └── youtube.ts    # YouTube URL parsing utilities
+├── supabase/
+│   └── schema.sql    # Database schema
+└── types.ts          # TypeScript type definitions
+```
+
+## Technologies Used
+
+- **Next.js 16** - React framework
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling
+- **Supabase** - Backend database and real-time subscriptions
+- **React Hooks** - State management
+
+## License
+
+MIT
