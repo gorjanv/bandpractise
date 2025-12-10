@@ -37,12 +37,16 @@ export function saveVote(vote: Vote): void {
   localStorage.setItem(VOTES_KEY, JSON.stringify(votes));
 }
 
+// Deprecated: This function is no longer used as we've migrated to Supabase
+// Kept for backward compatibility only
 export function updateSongVotes(songId: string): { yes: number; no: number } {
   const votes = getVotes();
   const songVotes = votes.filter(v => v.songId === songId);
+  // Legacy function - votes now use rating system instead of yes/no
+  // Return empty counts since this is deprecated
   return {
-    yes: songVotes.filter(v => v.vote === 'yes').length,
-    no: songVotes.filter(v => v.vote === 'no').length,
+    yes: 0,
+    no: 0,
   };
 }
 
