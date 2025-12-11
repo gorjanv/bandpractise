@@ -41,7 +41,19 @@ export async function GET(request: NextRequest) {
       return dbSongToSong(song, voteStats);
     });
 
-    return NextResponse.json(songsWithVotes);
+    // Sort by average rating descending, then by created_at descending for songs with same/no rating
+    const sortedSongs = songsWithVotes.sort((a, b) => {
+      // First sort by average rating (descending)
+      if (b.votes.averageRating !== a.votes.averageRating) {
+        return b.votes.averageRating - a.votes.averageRating;
+      }
+      // If ratings are the same (or both 0), sort by created_at descending
+      const aDate = new Date(a.addedAt).getTime();
+      const bDate = new Date(b.addedAt).getTime();
+      return bDate - aDate;
+    });
+
+    return NextResponse.json(sortedSongs);
   } catch (error) {
     console.error('Error fetching songs:', error);
     return NextResponse.json(

@@ -196,3 +196,4 @@ These are **foreign key relationships**, not duplicate user storage.
 - **You never see passwords**: They're hashed and stored securely by Supabase
 - **To view users**: Go to Supabase Dashboard → Authentication → Users
 
+

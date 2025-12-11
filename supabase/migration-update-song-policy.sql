@@ -5,3 +5,4 @@ CREATE POLICY "Users can update their own songs" ON songs
   FOR UPDATE 
   USING (auth.uid() = user_id);
 
+

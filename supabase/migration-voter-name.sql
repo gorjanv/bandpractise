@@ -8,3 +8,4 @@ ADD COLUMN IF NOT EXISTS voter_name TEXT;
 -- Backfill existing votes (optional - update with user names if needed)
 -- UPDATE votes SET voter_name = voter WHERE voter_name IS NULL AND voter IS NOT NULL;
 
+

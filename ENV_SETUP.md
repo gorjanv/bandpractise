@@ -58,3 +58,4 @@ Replace:
 - Ensure Row Level Security (RLS) policies are set up correctly (the schema.sql includes these)
 - Check that your Supabase project has real-time enabled (it should be by default)
 
+

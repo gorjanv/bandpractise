@@ -89,3 +89,4 @@ Consider adding rate limiting to prevent abuse:
 
 The main consideration is whether you want to restrict read access, but for a collaborative band voting app, the current setup (all authenticated users can read everything) is appropriate.
 
+

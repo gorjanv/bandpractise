@@ -21,3 +21,4 @@ export const EmptyText = styled(Text)`
 
 export { Heading2 };
 
+

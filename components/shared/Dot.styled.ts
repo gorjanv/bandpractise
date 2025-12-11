@@ -8,3 +8,4 @@ export const Dot = styled.span`
   background: ${theme.colors.purple[400]};
 `;
 
+

@@ -30,3 +30,4 @@ export function getYouTubeEmbedUrl(videoId: string, autoplay = false): string {
   return `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=${autoplay ? 1 : 0}`;
 }
 
+

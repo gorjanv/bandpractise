@@ -19,3 +19,4 @@ DELETE FROM songs;
 SELECT COUNT(*) as votes_count FROM votes;
 SELECT COUNT(*) as songs_count FROM songs;
 
+

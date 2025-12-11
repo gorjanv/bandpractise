@@ -20,3 +20,4 @@ CREATE POLICY "Authenticated users can delete all setlists" ON setlists
 CREATE POLICY "Authenticated users can manage songs in all setlists" ON setlist_songs
   FOR ALL USING (auth.uid() IS NOT NULL);
 
+

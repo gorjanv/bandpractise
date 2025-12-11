@@ -124,6 +124,8 @@ export const SelectSongPrompt = styled(GlassCard)`
   height: 100%;
   min-height: 20rem;
   padding: 2rem;
+
+  box-shadow: none;
 `;
 
 export const PromptContent = styled.div`
@@ -171,7 +173,7 @@ export const SongTile = styled(GlassCard)`
   overflow: hidden;
   border: 1px solid ${theme.colors.glass.border};
   transition: all ${theme.transitions.slow} ease;
-  
+  box-shadow: none;
   &:hover {
     border-color: rgba(168, 85, 247, 0.3);
   }

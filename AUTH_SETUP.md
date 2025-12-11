@@ -83,3 +83,4 @@ After running the migration, verify that the Row Level Security policies are cor
 - User IDs are automatically set by Supabase Auth
 - RLS policies enforce data access rules at the database level
 
+

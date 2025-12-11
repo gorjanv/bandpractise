@@ -5,3 +5,4 @@
 CREATE POLICY "Users can delete their own songs" ON songs
   FOR DELETE USING (auth.uid() = user_id OR auth.uid()::text = added_by);
 
+

@@ -97,3 +97,4 @@ ALTER PUBLICATION supabase_realtime ADD TABLE votes;
 - Make sure replication is enabled for both tables
 - Check that your Supabase project isn't paused
 
+

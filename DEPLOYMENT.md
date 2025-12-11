@@ -237,3 +237,4 @@ Make sure these are set in your hosting platform:
 - [Vercel Documentation](https://vercel.com/docs)
 - [Supabase Documentation](https://supabase.com/docs)
 
+
