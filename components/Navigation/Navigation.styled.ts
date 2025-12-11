@@ -225,7 +225,7 @@ export const HamburgerIcon = styled.div<{ $isOpen: boolean }>`
     height: 2px;
     width: 100%;
     background: white;
-    border-radius: 2px;
+      border-radius: 1rem;
     transition: all ${theme.transitions.normal} ease;
     transform-origin: center;
   }

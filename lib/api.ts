@@ -1,4 +1,4 @@
-import { Song, VoteWithDetails } from '@/types';
+import { Song, VoteWithDetails, Setlist } from '@/types';
 import { supabase } from '@/lib/supabase';
 
 const API_BASE = '/api';
@@ -155,5 +155,97 @@ export async function deleteSong(songId: string): Promise<void> {
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.error || 'Failed to delete song');
+  }
+}
+
+// Setlist API functions
+export async function fetchSetlists(): Promise<Setlist[]> {
+  const headers = await getAuthHeaders();
+  
+  const response = await fetch(API_BASE + '/setlists', {
+    method: 'GET',
+    headers,
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to fetch setlists');
+  }
+
+  return response.json();
+}
+
+export async function createSetlist(data: { name?: string; rehearsalDate: string }): Promise<Setlist> {
+  const headers = await getAuthHeaders();
+  
+  const response = await fetch(API_BASE + '/setlists', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to create setlist');
+  }
+
+  return response.json();
+}
+
+export async function deleteSetlist(setlistId: string): Promise<void> {
+  const headers = await getAuthHeaders();
+  
+  const response = await fetch(API_BASE + `/setlists/${setlistId}`, {
+    method: 'DELETE',
+    headers,
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to delete setlist');
+  }
+}
+
+export async function addSongToSetlist(setlistId: string, songId: string, position: number = -1): Promise<void> {
+  const headers = await getAuthHeaders();
+  
+  const response = await fetch(API_BASE + `/setlists/${setlistId}/songs`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ songId, position }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to add song to setlist');
+  }
+}
+
+export async function removeSongFromSetlist(setlistId: string, songId: string): Promise<void> {
+  const headers = await getAuthHeaders();
+  
+  const response = await fetch(API_BASE + `/setlists/${setlistId}/songs?songId=${songId}`, {
+    method: 'DELETE',
+    headers,
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to remove song from setlist');
+  }
+}
+
+export async function reorderSetlistSongs(setlistId: string, songIds: string[]): Promise<void> {
+  const headers = await getAuthHeaders();
+  
+  const response = await fetch(API_BASE + `/setlists/${setlistId}/songs`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify({ songIds }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to reorder setlist songs');
   }
 }

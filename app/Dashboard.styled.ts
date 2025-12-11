@@ -172,14 +172,13 @@ export const VotesList = styled.div`
   gap: 0.75rem;
   max-height: 24rem;
   overflow-y: auto;
-  padding-right: 0.5rem;
 `;
 
 export const VoteCard = styled(GlassCard)`
   border: 1px solid rgba(255, 255, 255, 0.05);
   padding: 1rem;
   transition: all ${theme.transitions.normal} ease;
-  
+  box-shadow: none;
   &:hover {
     border-color: rgba(168, 85, 247, 0.2);
   }
@@ -230,14 +229,12 @@ export const VoteComment = styled(Text)`
   font-size: 0.875rem;
   color: ${theme.colors.slate[300]};
   margin-top: 0.5rem;
-  padding-left: 2rem;
 `;
 
 export const VoteDate = styled(Text)`
   font-size: 0.75rem;
   color: ${theme.colors.slate[500]};
   margin-top: 0.5rem;
-  padding-left: 2rem;
 `;
 
 export const NoVotesText = styled(Text)`

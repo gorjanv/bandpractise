@@ -86,13 +86,13 @@ export const theme = {
   },
   
   borderRadius: {
-    sm: '0.5rem',
-    md: '0.75rem',
+    sm: '1rem',
+    md: '1rem',
     lg: '1rem',
-    xl: '1.5rem',
-    '2xl': '2rem',
-    '3xl': '3rem',
-    full: '9999px',
+    xl: '1rem',
+    '2xl': '1rem',
+    '3xl': '1rem',
+    full: '9999px', // Keep full for circular elements
   },
   
   shadows: {

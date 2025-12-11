@@ -30,3 +30,21 @@ export interface VoteWithDetails {
   userName: string;
   userEmail?: string | null;
 }
+
+export interface Setlist {
+  id: string;
+  name?: string | null;
+  rehearsalDate: string; // ISO date string
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+  songs?: SetlistSong[];
+}
+
+export interface SetlistSong {
+  id: string;
+  setlistId: string;
+  songId: string;
+  position: number;
+  song?: Song; // Populated when fetching setlist with songs
+}

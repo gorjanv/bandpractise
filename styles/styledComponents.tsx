@@ -64,7 +64,7 @@ export const GlassCard = styled.div`
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid ${theme.colors.glass.border};
-  border-radius: ${theme.borderRadius['3xl']};
+  border-radius: ${theme.borderRadius['lg']};
   box-shadow: ${theme.shadows.glow};
 `;
 
