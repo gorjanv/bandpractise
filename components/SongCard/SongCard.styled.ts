@@ -1,6 +1,5 @@
 import styled from 'styled-components';
 import { theme } from '@/styles/theme';
-import { DeleteButton } from '../shared/DeleteButton.styled';
 import { ArtworkContainer, ArtworkImage, ArtworkOverlay } from '../shared/Artwork.styled';
 import { Dot } from '../shared/Dot.styled';
 
@@ -19,6 +18,41 @@ export const Card = styled.div`
 
 export { ArtworkContainer, ArtworkImage };
 
+export const ActionButtonsContainer = styled.div`
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+  z-index: ${theme.zIndex.dropdown};
+`;
+
+export const EditButton = styled.button`
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(59, 130, 246, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  border-radius: 50%;
+  color: white;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all ${theme.transitions.normal} ease;
+  
+  &:hover {
+    background: rgba(59, 130, 246, 1);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+`;
+
 export const PreviewOverlay = styled.div`
   position: absolute;
   inset: 0;
@@ -29,7 +63,34 @@ export const PreviewOverlay = styled.div`
   z-index: ${theme.zIndex.dropdown};
 `;
 
-export { DeleteButton };
+// DeleteButton is replaced by SongCardDeleteButton below for use in ActionButtonsContainer
+
+export const SongCardDeleteButton = styled.button`
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(239, 68, 68, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  border-radius: 50%;
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all ${theme.transitions.normal} ease;
+  box-shadow: ${theme.shadows.lg};
+  
+  &:hover {
+    background: ${theme.colors.red[600]};
+    transform: scale(1.1);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+`;
 
 export const ClosePreviewButton = styled.button`
   position: absolute;

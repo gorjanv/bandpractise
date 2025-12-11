@@ -12,9 +12,10 @@ interface SongCardProps {
   initialRating?: number;
   initialComment?: string;
   onDelete?: (songId: string) => void;
+  onEdit?: (song: Song) => void;
 }
 
-export default function SongCard({ song, onVote, isActive, initialRating, initialComment, onDelete }: SongCardProps) {
+export default function SongCard({ song, onVote, isActive, initialRating, initialComment, onDelete, onEdit }: SongCardProps) {
   const { user } = useAuth();
   const [rating, setRating] = useState(initialRating || 5);
   const [comment, setComment] = useState(initialComment || '');
@@ -45,18 +46,33 @@ export default function SongCard({ song, onVote, isActive, initialRating, initia
   return (
     <S.Card>
       <S.ArtworkContainer>
-        {isOwner && onDelete && (
-          <S.DeleteButton
-            onClick={(e) => {
-              e.stopPropagation();
-              if (confirm('Are you sure you want to delete this song? This will also delete all votes.')) {
-                onDelete(song.id);
-              }
-            }}
-            title="Delete song"
-          >
-            ×
-          </S.DeleteButton>
+        {isOwner && (
+          <S.ActionButtonsContainer>
+            {onEdit && (
+              <S.EditButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(song);
+                }}
+                title="Edit song"
+              >
+                ✏️
+              </S.EditButton>
+            )}
+            {onDelete && (
+              <S.SongCardDeleteButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (confirm('Are you sure you want to delete this song? This will also delete all votes.')) {
+                    onDelete(song.id);
+                  }
+                }}
+                title="Delete song"
+              >
+                ×
+              </S.SongCardDeleteButton>
+            )}
+          </S.ActionButtonsContainer>
         )}
         <S.ArtworkImage
           src={song.artwork}

@@ -144,6 +144,32 @@ export async function getUserVoteForSong(songId: string): Promise<{ rating: numb
 }
 
 // Delete a song (only if user is the owner)
+export async function updateSong(
+  songId: string,
+  song: Omit<Song, 'id' | 'addedAt' | 'votes' | 'addedBy'>
+): Promise<Song> {
+  const headers = await getAuthHeaders();
+  
+  const response = await fetch(API_BASE + `/songs/${songId}`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify({
+      title: song.title,
+      artist: song.artist,
+      artwork: song.artwork,
+      youtubeUrl: song.youtubeUrl,
+      youtubeId: song.youtubeId,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to update song');
+  }
+
+  return response.json();
+}
+
 export async function deleteSong(songId: string): Promise<void> {
   const headers = await getAuthHeaders();
   

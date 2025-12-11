@@ -47,6 +47,12 @@ CREATE POLICY "Authenticated users can read songs" ON songs
 CREATE POLICY "Authenticated users can insert songs" ON songs
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+CREATE POLICY "Users can update their own songs" ON songs
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own songs" ON songs
+  FOR DELETE USING (auth.uid() = user_id OR auth.uid()::text = added_by);
+
 CREATE POLICY "Authenticated users can read votes" ON votes
   FOR SELECT USING (true);
 

@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Song } from '@/types';
-import { fetchSongs, addSong, submitVote, getUserVoteForSong, deleteSong } from '@/lib/api';
+import { fetchSongs, addSong, submitVote, getUserVoteForSong, deleteSong, updateSong } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAddSongModal } from '@/contexts/AddSongModalContext';
 import SongCard from '@/components/SongCard/SongCard';
 import AddSongModal from '@/components/AddSongModal';
+import EditSongModal from '@/components/EditSongModal';
 import AuthModal from '@/components/AuthModal';
 import { PageContainer, AnimatedBackground } from '@/styles/styledComponents';
 import * as S from './VotePage.styled';
@@ -24,6 +25,8 @@ export default function VotePage() {
   const [selectedSongId, setSelectedSongId] = useState<string | null>(null);
   const [userVotes, setUserVotes] = useState<Record<string, UserVote>>({});
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [songToEdit, setSongToEdit] = useState<Song | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -161,6 +164,25 @@ export default function VotePage() {
     }
   };
 
+  const handleEditSong = (song: Song) => {
+    setSongToEdit(song);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateSong = async (songId: string, songData: Omit<Song, 'id' | 'addedAt' | 'votes' | 'addedBy'>) => {
+    try {
+      setError(null);
+      const updatedSong = await updateSong(songId, songData);
+      setSongs(prev => prev.map(s => s.id === songId ? updatedSong : s));
+      setShowEditModal(false);
+      setSongToEdit(null);
+    } catch (err) {
+      console.error('Error updating song:', err);
+      setError(err instanceof Error ? err.message : 'Failed to update song');
+      throw err;
+    }
+  };
+
   const selectedSong = selectedSongId ? songs.find(s => s.id === selectedSongId) : null;
   const hasVoted = selectedSongId ? !!userVotes[selectedSongId] : false;
   const userVote = selectedSongId ? userVotes[selectedSongId] : null;
@@ -258,6 +280,7 @@ export default function VotePage() {
                     initialRating={userVote?.rating}
                     initialComment={userVote?.comment}
                     onDelete={handleDeleteSong}
+                    onEdit={handleEditSong}
                   />
                 ) : (
                   <S.SelectSongPrompt>
@@ -278,6 +301,15 @@ export default function VotePage() {
         isOpen={showAddModal}
         onClose={closeAddModal}
         onAdd={handleAddSong}
+      />
+      <EditSongModal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setSongToEdit(null);
+        }}
+        song={songToEdit}
+        onEdit={handleUpdateSong}
       />
       <AuthModal
         isOpen={showAuthModal}
