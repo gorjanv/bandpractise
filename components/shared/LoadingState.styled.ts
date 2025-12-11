@@ -4,6 +4,10 @@ import { theme } from '@/styles/theme';
 
 export const LoadingContainer = styled(GlassCard)`
   padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
 `;
 
