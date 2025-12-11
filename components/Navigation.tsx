@@ -3,6 +3,143 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import styled from 'styled-components';
+import { theme } from '@/styles/theme';
+
+const Nav = styled.nav`
+  background: ${theme.colors.glass.background};
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid ${theme.colors.glass.border};
+  position: sticky;
+  top: 0;
+  z-index: ${theme.zIndex.sticky};
+`;
+
+const NavContainer = styled.div`
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const LogoLink = styled(Link)`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+`;
+
+const LogoIcon = styled.div`
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: ${theme.borderRadius.xl};
+  background: linear-gradient(to bottom right, ${theme.colors.purple[500]}, ${theme.colors.pink[500]}, ${theme.colors.cyan[500]});
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+`;
+
+const LogoText = styled.h1`
+  font-size: 1.25rem;
+  font-weight: 700;
+  background: linear-gradient(to right, ${theme.colors.purple[400]}, ${theme.colors.pink[400]}, ${theme.colors.cyan[400]});
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+`;
+
+const NavLinks = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const NavLink = styled(Link)<{ $isActive: boolean }>`
+  padding: 0.5rem 1rem;
+  border-radius: ${theme.borderRadius.xl};
+  font-weight: 600;
+  text-decoration: none;
+  transition: all ${theme.transitions.slow} ease;
+  
+  ${props => props.$isActive ? `
+    background: linear-gradient(to right, rgba(168, 85, 247, 0.8), rgba(34, 211, 238, 0.8));
+    color: white;
+    box-shadow: 0 10px 15px -3px rgba(168, 85, 247, 0.3);
+  ` : `
+    color: ${theme.colors.slate[300]};
+    
+    &:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.05);
+    }
+  `}
+`;
+
+const UserMenu = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: 1rem;
+  padding-left: 1rem;
+  border-left: 1px solid ${theme.colors.glass.border};
+`;
+
+const UserInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: ${theme.colors.glass.background};
+  backdrop-filter: blur(20px);
+  border-radius: ${theme.borderRadius.xl};
+`;
+
+const Avatar = styled.div`
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: linear-gradient(to bottom right, ${theme.colors.purple[500]}, ${theme.colors.pink[500]});
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: white;
+`;
+
+const UserDetails = styled.div`
+  display: none;
+  
+  @media (min-width: 640px) {
+    display: block;
+  }
+`;
+
+const UserName = styled.p`
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: white;
+  margin: 0;
+`;
+
+const SignOutButton = styled.button`
+  font-size: 0.75rem;
+  color: ${theme.colors.slate[400]};
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color ${theme.transitions.normal} ease;
+  
+  &:hover {
+    color: white;
+  }
+`;
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -11,9 +148,8 @@ export default function Navigation() {
 
   const handleSignOut = async () => {
     await signOut();
-    // Redirect to home page after sign out
     router.push('/');
-    router.refresh(); // Refresh to update the page state
+    router.refresh();
   };
 
   const navItems = [
@@ -22,66 +158,43 @@ export default function Navigation() {
   ];
 
   return (
-    <nav className="glass border-b border-white/10 sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
-          {/* Logo/Brand */}
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 via-pink-500 to-cyan-500 flex items-center justify-center text-2xl">
-              🎵
-            </div>
-            <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-                Band Practise
-              </h1>
-            </div>
-          </Link>
+    <Nav>
+      <NavContainer>
+        <LogoLink href="/">
+          <LogoIcon>🎵</LogoIcon>
+          <LogoText>Band Practise</LogoText>
+        </LogoLink>
 
-          {/* Navigation Links */}
-          {user && (
-            <div className="flex items-center gap-2">
-              {navItems.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`px-4 py-2 rounded-xl font-semibold transition-all duration-300 ${
-                      isActive
-                        ? 'bg-gradient-to-r from-purple-600/80 to-cyan-600/80 text-white shadow-lg shadow-purple-500/30'
-                        : 'text-slate-300 hover:text-white hover:bg-white/5'
-                    }`}
-                  >
-                    <span className="mr-2">{item.icon}</span>
-                    {item.label}
-                  </Link>
-                );
-              })}
+        {user && (
+          <NavLinks>
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <NavLink key={item.href} href={item.href} $isActive={isActive}>
+                  <span style={{ marginRight: '0.5rem' }}>{item.icon}</span>
+                  {item.label}
+                </NavLink>
+              );
+            })}
 
-              {/* User Menu */}
-              <div className="flex items-center gap-3 ml-4 pl-4 border-l border-white/10">
-                <div className="flex items-center gap-2 px-3 py-1.5 glass rounded-xl">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-sm font-bold text-white">
-                    {(user.user_metadata?.name || user.email?.split('@')[0] || 'U')[0].toUpperCase()}
-                  </div>
-                  <div className="hidden sm:block">
-                    <p className="text-sm font-medium text-white">
-                      {user.user_metadata?.name || user.email?.split('@')[0]}
-                    </p>
-                    <button
-                      onClick={handleSignOut}
-                      className="text-xs text-slate-400 hover:text-white transition-colors"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </nav>
+            <UserMenu>
+              <UserInfo>
+                <Avatar>
+                  {(user.user_metadata?.name || user.email?.split('@')[0] || 'U')[0].toUpperCase()}
+                </Avatar>
+                <UserDetails>
+                  <UserName>
+                    {user.user_metadata?.name || user.email?.split('@')[0]}
+                  </UserName>
+                  <SignOutButton onClick={handleSignOut}>
+                    Sign Out
+                  </SignOutButton>
+                </UserDetails>
+              </UserInfo>
+            </UserMenu>
+          </NavLinks>
+        )}
+      </NavContainer>
+    </Nav>
   );
 }
-

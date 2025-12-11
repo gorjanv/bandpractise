@@ -2,11 +2,90 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import styled from 'styled-components';
+import { ModalOverlay, GlassCard, Input, PrimaryButton, SecondaryButton, Heading2 } from '@/styles/styledComponents';
+import { theme } from '@/styles/theme';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose?: () => void;
 }
+
+const ModalContent = styled(GlassCard)`
+  max-width: 28rem;
+  width: 100%;
+  padding: 2rem;
+  box-shadow: ${theme.shadows.glow};
+`;
+
+const Header = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+`;
+
+const Icon = styled.div`
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: ${theme.borderRadius.xl};
+  background: linear-gradient(to bottom right, ${theme.colors.purple[500]}, ${theme.colors.pink[500]}, ${theme.colors.cyan[500]});
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const Label = styled.label`
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: ${theme.colors.slate[300]};
+  margin-bottom: 0.5rem;
+`;
+
+const HelpText = styled.p`
+  font-size: 0.75rem;
+  color: ${theme.colors.slate[500]};
+  margin: 0.5rem 0 0 0;
+`;
+
+const ErrorMessage = styled.div`
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: ${theme.colors.red[300]};
+  padding: 0.75rem 1rem;
+  border-radius: ${theme.borderRadius.xl};
+`;
+
+const SuccessMessage = styled.div`
+  background: rgba(34, 211, 238, 0.1);
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  color: ${theme.colors.cyan[300]};
+  padding: 0.75rem 1rem;
+  border-radius: ${theme.borderRadius.xl};
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  
+  button {
+    flex: 1;
+  }
+`;
 
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -43,7 +122,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           setError(error.message);
         } else {
           setMessage('Account created! Please check your email to verify your account.');
-          // Reset form
           setEmail('');
           setPassword('');
           setName('');
@@ -57,7 +135,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         if (error) {
           setError(error.message);
         } else {
-          // Success - auth context will handle the state change
           setEmail('');
           setPassword('');
           if (onClose) onClose();
@@ -73,78 +150,54 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="glass rounded-3xl shadow-2xl border border-white/10 max-w-md w-full p-8 glow">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 via-pink-500 to-cyan-500 flex items-center justify-center">
-            <span className="text-xl">🎵</span>
-          </div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-            {isSignUp ? 'Create Account' : 'Sign In'}
-          </h2>
-        </div>
+    <ModalOverlay>
+      <ModalContent>
+        <Header>
+          <Icon>🎵</Icon>
+          <Heading2>{isSignUp ? 'Create Account' : 'Sign In'}</Heading2>
+        </Header>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <Form onSubmit={handleSubmit}>
           {isSignUp && (
-            <div>
-              <label className="block text-sm font-semibold text-slate-300 mb-2">
-                Name
-              </label>
-              <input
+            <FormGroup>
+              <Label>Name</Label>
+              <Input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your name"
-                className="w-full px-4 py-3 bg-slate-800/50 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
               />
-            </div>
+            </FormGroup>
           )}
 
-          <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">
-              Email
-            </label>
-            <input
+          <FormGroup>
+            <Label>Email</Label>
+            <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
-              className="w-full px-4 py-3 bg-slate-800/50 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
             />
-          </div>
+          </FormGroup>
 
-          <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">
-              Password
-            </label>
-            <input
+          <FormGroup>
+            <Label>Password</Label>
+            <Input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-3 bg-slate-800/50 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
             />
             {isSignUp && (
-              <p className="text-xs text-slate-500 mt-2">
-                Password must be at least 6 characters
-              </p>
+              <HelpText>Password must be at least 6 characters</HelpText>
             )}
-          </div>
+          </FormGroup>
 
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-300 px-4 py-3 rounded-xl">
-              {error}
-            </div>
-          )}
+          {error && <ErrorMessage>{error}</ErrorMessage>}
+          {message && <SuccessMessage>{message}</SuccessMessage>}
 
-          {message && (
-            <div className="bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 px-4 py-3 rounded-xl">
-              {message}
-            </div>
-          )}
-
-          <div className="flex gap-3 pt-4">
-            <button
+          <ButtonGroup>
+            <SecondaryButton
               type="button"
               onClick={() => {
                 setIsSignUp(!isSignUp);
@@ -154,25 +207,19 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 setPassword('');
                 setName('');
               }}
-              className="flex-1 px-6 py-3 bg-slate-800/50 hover:bg-slate-800 text-slate-300 font-semibold rounded-xl transition-all duration-300 border border-white/10"
             >
               {isSignUp ? 'Sign In Instead' : 'Create Account'}
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
-            >
+            </SecondaryButton>
+            <PrimaryButton type="submit" disabled={isLoading}>
               {isLoading
                 ? 'Loading...'
                 : isSignUp
                 ? 'Sign Up'
                 : 'Sign In'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+            </PrimaryButton>
+          </ButtonGroup>
+        </Form>
+      </ModalContent>
+    </ModalOverlay>
   );
 }
-

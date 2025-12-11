@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Song } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
+import styled from 'styled-components';
+import { theme } from '@/styles/theme';
 
 interface SongCardProps {
   song: Song;
@@ -13,6 +15,300 @@ interface SongCardProps {
   onDelete?: (songId: string) => void;
 }
 
+const Card = styled.div`
+  width: 100%;
+  max-width: 42rem;
+  margin: 0 auto;
+  border-radius: ${theme.borderRadius['3xl']};
+  overflow: hidden;
+  background: ${theme.colors.glass.background};
+  backdrop-filter: blur(20px);
+  border: 1px solid ${theme.colors.glass.border};
+  box-shadow: ${theme.shadows.glow};
+  transition: all ${theme.transitions.slow} ease;
+`;
+
+const ArtworkContainer = styled.div`
+  position: relative;
+  height: 16rem;
+  background: linear-gradient(to bottom right, ${theme.colors.purple[600]}, ${theme.colors.pink[600]}, ${theme.colors.cyan[600]});
+  overflow: hidden;
+`;
+
+const ArtworkImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const DeleteButton = styled.button`
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 2rem;
+  height: 2rem;
+  background: rgba(239, 68, 68, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all ${theme.transitions.normal} ease;
+  z-index: ${theme.zIndex.dropdown};
+  font-size: 1.25rem;
+  font-weight: 700;
+  box-shadow: ${theme.shadows.lg};
+  
+  &:hover {
+    background: ${theme.colors.red[600]};
+    transform: scale(1.1);
+  }
+`;
+
+const PreviewOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: ${theme.zIndex.dropdown};
+`;
+
+const ClosePreviewButton = styled.button`
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: white;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.25rem;
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.7);
+  }
+`;
+
+const Content = styled.div`
+  padding: 1.5rem;
+  height: 60%;
+  display: flex;
+  flex-direction: column;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
+`;
+
+const SongInfo = styled.div`
+  margin-bottom: 1rem;
+`;
+
+const SongTitle = styled.h2`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 0.25rem 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const SongArtist = styled.p`
+  font-size: 1.125rem;
+  color: ${theme.colors.slate[300]};
+  margin: 0 0 0.5rem 0;
+`;
+
+const AddedBy = styled.p`
+  font-size: 0.75rem;
+  color: ${theme.colors.slate[500]};
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0;
+`;
+
+const Dot = styled.span`
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: ${theme.colors.purple[500]};
+`;
+
+const RatingSection = styled.div`
+  margin-bottom: 1rem;
+`;
+
+const RatingHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+`;
+
+const RatingLabel = styled.label`
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: ${theme.colors.slate[300]};
+`;
+
+const RatingDisplay = styled.div`
+  padding: 0.25rem 0.75rem;
+  background: linear-gradient(to right, rgba(168, 85, 247, 0.3), rgba(34, 211, 238, 0.3));
+  border-radius: ${theme.borderRadius.lg};
+  border: 1px solid rgba(168, 85, 247, 0.3);
+`;
+
+const RatingValue = styled.span`
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(to right, ${theme.colors.purple[400]}, ${theme.colors.cyan[400]});
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+`;
+
+const SliderContainer = styled.div`
+  position: relative;
+`;
+
+const Slider = styled.input.attrs({ type: 'range' })<{ $value: number }>`
+  width: 100%;
+  height: 0.75rem;
+  background: ${theme.colors.slate[700]};
+  border-radius: ${theme.borderRadius.lg};
+  appearance: none;
+  cursor: pointer;
+  background-image: linear-gradient(
+    to right,
+    ${theme.colors.purple[400]} 0%,
+    ${theme.colors.purple[400]} ${props => (props.$value - 1) * 11.11}%,
+    ${theme.colors.slate[700]} ${props => (props.$value - 1) * 11.11}%,
+    ${theme.colors.slate[700]} 100%
+  );
+  
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, ${theme.colors.purple[400]}, ${theme.colors.pink[400]}, ${theme.colors.cyan[400]});
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.6);
+    border: 2px solid white;
+  }
+  
+  &::-moz-range-thumb {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, ${theme.colors.purple[400]}, ${theme.colors.pink[400]}, ${theme.colors.cyan[400]});
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.6);
+    border: 2px solid white;
+  }
+`;
+
+const SliderLabels = styled.div`
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: ${theme.colors.slate[500]};
+  margin-top: 0.25rem;
+`;
+
+const CommentSection = styled.div`
+  margin-bottom: 1rem;
+  flex: 1;
+`;
+
+const CommentLabel = styled.label`
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: ${theme.colors.slate[300]};
+  margin-bottom: 0.5rem;
+`;
+
+const CommentTextarea = styled.textarea`
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid ${theme.colors.glass.borderLight};
+  border-radius: ${theme.borderRadius.xl};
+  color: white;
+  font-size: 1rem;
+  resize: none;
+  transition: all ${theme.transitions.normal} ease;
+  font-family: inherit;
+  
+  &::placeholder {
+    color: ${theme.colors.slate[500]};
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: ${theme.colors.purple[500]};
+    box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2);
+  }
+`;
+
+const ActionButtons = styled.div`
+  display: flex;
+  gap: 0.75rem;
+`;
+
+const PreviewButton = styled.button`
+  padding: 0.75rem 1rem;
+  background: linear-gradient(to right, rgba(168, 85, 247, 0.8), rgba(34, 211, 238, 0.8));
+  color: white;
+  font-weight: 600;
+  border-radius: ${theme.borderRadius.xl};
+  border: none;
+  cursor: pointer;
+  transition: all ${theme.transitions.slow} ease;
+  box-shadow: 0 10px 15px -3px rgba(168, 85, 247, 0.3);
+  
+  &:hover {
+    background: linear-gradient(to right, ${theme.colors.purple[500]}, ${theme.colors.cyan[500]});
+    transform: scale(1.05);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+`;
+
+const SubmitButton = styled.button`
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(to right, ${theme.colors.emerald[500]}, #14b8a6);
+  color: white;
+  font-weight: 600;
+  border-radius: ${theme.borderRadius.xl};
+  border: none;
+  cursor: pointer;
+  transition: all ${theme.transitions.slow} ease;
+  box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+  
+  &:hover {
+    background: linear-gradient(to right, ${theme.colors.emerald[400]}, #2dd4bf);
+    transform: scale(1.05);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+`;
+
 export default function SongCard({ song, onVote, isActive, initialRating, initialComment, onDelete }: SongCardProps) {
   const { user } = useAuth();
   const [rating, setRating] = useState(initialRating || 5);
@@ -20,7 +316,6 @@ export default function SongCard({ song, onVote, isActive, initialRating, initia
   const [showPreview, setShowPreview] = useState(false);
   const isOwner = user && song.userId === user.id;
 
-  // Update state when initial values change (when switching songs)
   useEffect(() => {
     if (initialRating !== undefined) {
       setRating(initialRating);
@@ -43,33 +338,30 @@ export default function SongCard({ song, onVote, isActive, initialRating, initia
   if (!isActive) return null;
 
   return (
-    <div className="w-full max-w-2xl mx-auto rounded-3xl glass overflow-hidden border border-white/10 shadow-2xl glow transition-all duration-300">
-      {/* Artwork/Image */}
-      <div className="relative h-64 bg-gradient-to-br from-purple-600 via-pink-600 to-cyan-600 overflow-hidden">
+    <Card>
+      <ArtworkContainer>
         {isOwner && onDelete && (
-          <button
+          <DeleteButton
             onClick={(e) => {
               e.stopPropagation();
               if (confirm('Are you sure you want to delete this song? This will also delete all votes.')) {
                 onDelete(song.id);
               }
             }}
-            className="absolute top-3 right-3 w-8 h-8 bg-red-500/90 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg z-10"
             title="Delete song"
           >
             ×
-          </button>
+          </DeleteButton>
         )}
-        <img
+        <ArtworkImage
           src={song.artwork}
           alt={`${song.artist} - ${song.title}`}
-          className="w-full h-full object-cover"
           onError={(e) => {
             (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${song.youtubeId}/maxresdefault.jpg`;
           }}
         />
         {showPreview && (
-          <div className="absolute inset-0 bg-black/90 flex items-center justify-center z-10">
+          <PreviewOverlay>
             <iframe
               width="100%"
               height="100%"
@@ -77,92 +369,73 @@ export default function SongCard({ song, onVote, isActive, initialRating, initia
               title={song.title}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
-              className="w-full h-full"
+              style={{ border: 'none' }}
             />
-            <button
+            <ClosePreviewButton
               onClick={(e) => {
                 e.stopPropagation();
                 setShowPreview(false);
               }}
-              className="absolute top-4 right-4 text-white bg-black/50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/70"
             >
               ✕
-            </button>
-          </div>
+            </ClosePreviewButton>
+          </PreviewOverlay>
         )}
-      </div>
+      </ArtworkContainer>
 
-      {/* Song Info & Voting */}
-      <div className="p-6 h-3/5 flex flex-col bg-slate-900/50 backdrop-blur-sm">
-        <div className="mb-4">
-          <h2 className="text-2xl font-bold text-white mb-1 line-clamp-1">{song.title}</h2>
-          <p className="text-lg text-slate-300 mb-2">{song.artist}</p>
-          <p className="text-xs text-slate-500 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+      <Content>
+        <SongInfo>
+          <SongTitle>{song.title}</SongTitle>
+          <SongArtist>{song.artist}</SongArtist>
+          <AddedBy>
+            <Dot />
             Added by {song.addedBy}
-          </p>
-        </div>
+          </AddedBy>
+        </SongInfo>
 
-        {/* Rating Slider */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-3">
-            <label className="text-sm font-semibold text-slate-300">
-              Rate this song (1-10)
-            </label>
-            <div className="px-3 py-1 bg-gradient-to-r from-purple-600/30 to-cyan-600/30 rounded-lg border border-purple-500/30">
-              <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                {rating}
-              </span>
-            </div>
-          </div>
-          <input
-            type="range"
-            min="1"
-            max="10"
-            value={rating}
-            onChange={(e) => setRating(Number(e.target.value))}
-            className="w-full h-3 bg-slate-700 rounded-lg appearance-none cursor-pointer slider"
-            style={{
-              background: `linear-gradient(to right, rgb(168, 85, 247) 0%, rgb(168, 85, 247) ${(rating - 1) * 11.11}%, rgb(51, 65, 85) ${(rating - 1) * 11.11}%, rgb(51, 65, 85) 100%)`
-            }}
-          />
-          <div className="flex justify-between text-xs text-slate-500 mt-1">
-            <span>1</span>
-            <span>5</span>
-            <span>10</span>
-          </div>
-        </div>
+        <RatingSection>
+          <RatingHeader>
+            <RatingLabel>Rate this song (1-10)</RatingLabel>
+            <RatingDisplay>
+              <RatingValue>{rating}</RatingValue>
+            </RatingDisplay>
+          </RatingHeader>
+          <SliderContainer>
+            <Slider
+              type="range"
+              min="1"
+              max="10"
+              value={rating}
+              onChange={(e) => setRating(Number(e.target.value))}
+              $value={rating}
+            />
+            <SliderLabels>
+              <span>1</span>
+              <span>5</span>
+              <span>10</span>
+            </SliderLabels>
+          </SliderContainer>
+        </RatingSection>
 
-        {/* Comment Textarea */}
-        <div className="mb-4 flex-1">
-          <label className="block text-sm font-semibold text-slate-300 mb-2">
-            Add a comment (optional)
-          </label>
-          <textarea
+        <CommentSection>
+          <CommentLabel>Add a comment (optional)</CommentLabel>
+          <CommentTextarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             placeholder="Explain your rating..."
             rows={3}
-            className="w-full px-4 py-3 bg-slate-800/50 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none"
           />
-        </div>
+        </CommentSection>
 
-        {/* Action Buttons */}
-        <div className="flex gap-3">
-          <button
-            onClick={() => setShowPreview(true)}
-            className="px-4 py-3 bg-gradient-to-r from-purple-600/80 to-cyan-600/80 hover:from-purple-500 hover:to-cyan-500 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-purple-500/30"
-          >
+        <ActionButtons>
+          <PreviewButton onClick={() => setShowPreview(true)}>
             🎵 Preview
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-emerald-500/30"
-          >
+          </PreviewButton>
+          <SubmitButton onClick={handleSubmit}>
             Submit Vote
-          </button>
-        </div>
-      </div>
-    </div>
+          </SubmitButton>
+        </ActionButtons>
+      </Content>
+    </Card>
   );
 }

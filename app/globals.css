@@ -1,15 +1,19 @@
-@import "tailwindcss";
-
 :root {
   --background: #0a0a0f;
   --foreground: #ededed;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
 }
 
 body {
@@ -20,60 +24,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-@keyframes gradient-shift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
-}
-
-.gradient-animated {
-  background-size: 200% 200%;
-  animation: gradient-shift 8s ease infinite;
-}
-
-.glass {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.glow {
-  box-shadow: 0 0 20px rgba(168, 85, 247, 0.4), 0 0 40px rgba(59, 130, 246, 0.2);
-}
-
-.delay-1000 {
-  animation-delay: 1s;
-}
-
-/* Custom slider styling */
-input[type="range"].slider {
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-input[type="range"].slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgb(168, 85, 247), rgb(236, 72, 153), rgb(34, 211, 238));
-  cursor: pointer;
-  box-shadow: 0 0 10px rgba(168, 85, 247, 0.6);
-  border: 2px solid white;
-}
-
-input[type="range"].slider::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgb(168, 85, 247), rgb(236, 72, 153), rgb(34, 211, 238));
-  cursor: pointer;
-  box-shadow: 0 0 10px rgba(168, 85, 247, 0.6);
-  border: 2px solid white;
+#__next {
+  height: 100%;
 }

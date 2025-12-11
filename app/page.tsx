@@ -6,6 +6,367 @@ import { fetchSongs, getSongVotesWithDetails, deleteSong, addSong } from '@/lib/
 import { useAuth } from '@/contexts/AuthContext';
 import AuthModal from '@/components/AuthModal';
 import AddSongModal from '@/components/AddSongModal';
+import styled from 'styled-components';
+import { PageContainer, AnimatedBackground, Container, GlassCard, PrimaryButton, Heading1, Heading2, Heading3, Text, Spinner } from '@/styles/styledComponents';
+import { theme } from '@/styles/theme';
+
+const ContentWrapper = styled(Container)`
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  position: relative;
+  z-index: ${theme.zIndex.base};
+`;
+
+const Header = styled.div`
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  
+  @media (max-width: ${theme.breakpoints.mobile}) {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+`;
+
+const HeaderText = styled.div``;
+
+const Subtitle = styled(Text)`
+  color: ${theme.colors.slate[400]};
+  margin-top: 0.5rem;
+`;
+
+const ErrorBanner = styled.div`
+  margin-bottom: 1.5rem;
+  background: ${theme.colors.glass.background};
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background-color: rgba(239, 68, 68, 0.1);
+  padding: 0.75rem 1rem;
+  border-radius: ${theme.borderRadius.xl};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const ErrorText = styled(Text)`
+  color: ${theme.colors.red[300]};
+`;
+
+const CloseErrorButton = styled.button`
+  color: ${theme.colors.red[400]};
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1.25rem;
+  line-height: 1;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all ${theme.transitions.normal} ease;
+  
+  &:hover {
+    color: ${theme.colors.red[300]};
+    background: rgba(239, 68, 68, 0.2);
+  }
+`;
+
+const SongsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+`;
+
+const SongTile = styled(GlassCard)`
+  overflow: hidden;
+  border: 1px solid ${theme.colors.glass.border};
+  transition: all ${theme.transitions.slow} ease;
+  
+  &:hover {
+    border-color: rgba(168, 85, 247, 0.3);
+    transform: scale(1.02);
+  }
+`;
+
+const ArtworkWrapper = styled.div`
+  position: relative;
+  height: 12rem;
+  background: linear-gradient(to bottom right, ${theme.colors.purple[600]}, ${theme.colors.pink[600]}, ${theme.colors.cyan[600]});
+  overflow: hidden;
+`;
+
+const ArtworkImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const ArtworkOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+`;
+
+const ArtworkInfo = styled.div`
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  right: 1rem;
+`;
+
+const SongTitle = styled(Heading3)`
+  font-size: 1.25rem;
+  color: white;
+  margin-bottom: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const SongArtist = styled(Text)`
+  font-size: 0.875rem;
+  color: ${theme.colors.slate[300]};
+  margin-bottom: 0.25rem;
+`;
+
+const AddedByText = styled(Text)`
+  font-size: 0.75rem;
+  color: ${theme.colors.slate[300]};
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+`;
+
+const Dot = styled.span`
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: ${theme.colors.purple[400]};
+`;
+
+const TileDeleteButton = styled.button`
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 2rem;
+  height: 2rem;
+  background: rgba(239, 68, 68, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all ${theme.transitions.normal} ease;
+  z-index: ${theme.zIndex.dropdown};
+  font-size: 1.25rem;
+  font-weight: 700;
+  box-shadow: ${theme.shadows.lg};
+  
+  &:hover {
+    background: ${theme.colors.red[600]};
+    transform: scale(1.1);
+  }
+`;
+
+const TileContent = styled.div`
+  padding: 1.5rem;
+`;
+
+const RatingSection = styled.div`
+  margin-bottom: 1rem;
+`;
+
+const RatingHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+`;
+
+const RatingLabel = styled(Text)`
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: ${theme.colors.slate[400]};
+`;
+
+const VoteCount = styled(Text)`
+  font-size: 0.75rem;
+  color: ${theme.colors.slate[500]};
+`;
+
+const RatingBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
+const RatingBarFill = styled.div<{ $width: number; $from: string; $to: string }>`
+  flex: 1;
+  height: 0.75rem;
+  background: ${theme.colors.slate[800]};
+  border-radius: ${theme.borderRadius.full};
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    display: block;
+    height: 100%;
+    width: ${props => props.$width}%;
+    background: linear-gradient(to right, ${props => props.$from}, ${props => props.$to});
+    transition: width ${theme.transitions.slow} ease;
+  }
+`;
+
+const RatingValue = styled.span<{ $from: string; $to: string }>`
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(to right, ${props => props.$from}, ${props => props.$to});
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+`;
+
+const ExpandButton = styled.button`
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background: rgba(30, 41, 59, 0.5);
+  color: ${theme.colors.slate[300]};
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: ${theme.borderRadius.xl};
+  border: 1px solid ${theme.colors.glass.borderLight};
+  cursor: pointer;
+  transition: all ${theme.transitions.normal} ease;
+  margin-bottom: 0.75rem;
+  
+  &:hover {
+    background: ${theme.colors.slate[800]};
+  }
+`;
+
+const VotesList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 24rem;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+`;
+
+const VoteCard = styled(GlassCard)`
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  transition: all ${theme.transitions.normal} ease;
+  
+  &:hover {
+    border-color: rgba(168, 85, 247, 0.2);
+  }
+`;
+
+const VoteHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+`;
+
+const VoteUser = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const UserAvatar = styled.div`
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: linear-gradient(to bottom right, ${theme.colors.purple[500]}, ${theme.colors.pink[500]});
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: white;
+`;
+
+const UserName = styled(Text)`
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+`;
+
+const VoteRating = styled.div<{ $from: string; $to: string }>`
+  padding: 0.25rem 0.5rem;
+  border-radius: ${theme.borderRadius.lg};
+  background: linear-gradient(to right, ${props => props.$from}, ${props => props.$to});
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 700;
+`;
+
+const VoteComment = styled(Text)`
+  font-size: 0.875rem;
+  color: ${theme.colors.slate[300]};
+  margin-top: 0.5rem;
+  padding-left: 2rem;
+`;
+
+const VoteDate = styled(Text)`
+  font-size: 0.75rem;
+  color: ${theme.colors.slate[500]};
+  margin-top: 0.5rem;
+  padding-left: 2rem;
+`;
+
+const EmptyState = styled(GlassCard)`
+  padding: 3rem;
+  text-align: center;
+  box-shadow: ${theme.shadows.glow};
+`;
+
+const EmptyIcon = styled.div`
+  font-size: 3.75rem;
+  margin-bottom: 1.5rem;
+`;
+
+const EmptyText = styled(Text)`
+  color: ${theme.colors.slate[300]};
+  font-size: 1.125rem;
+  margin: 1rem 0 2rem 0;
+`;
+
+const LoadingContainer = styled(GlassCard)`
+  padding: 3rem;
+  text-align: center;
+`;
+
+const LoadingText = styled(Text)`
+  color: ${theme.colors.slate[300]};
+  font-weight: 500;
+  margin-top: 1.5rem;
+`;
+
+const NoVotesText = styled(Text)`
+  font-size: 0.875rem;
+  color: ${theme.colors.slate[500]};
+  text-align: center;
+  padding: 1rem 0;
+`;
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -42,7 +403,6 @@ export default function Dashboard() {
   };
 
   const loadVotesForSong = async (songId: string) => {
-    // Toggle: if already loaded, clear it
     if (votesMap[songId]) {
       setVotesMap(prev => {
         const newMap = { ...prev };
@@ -64,10 +424,10 @@ export default function Dashboard() {
   };
 
   const getRatingColor = (rating: number) => {
-    if (rating >= 8) return 'from-emerald-500 to-teal-500';
-    if (rating >= 6) return 'from-cyan-500 to-blue-500';
-    if (rating >= 4) return 'from-yellow-500 to-orange-500';
-    return 'from-red-500 to-pink-500';
+    if (rating >= 8) return { from: theme.colors.emerald[500], to: '#14b8a6' };
+    if (rating >= 6) return { from: theme.colors.cyan[500], to: theme.colors.purple[400] };
+    if (rating >= 4) return { from: '#eab308', to: '#f97316' };
+    return { from: theme.colors.red[500], to: theme.colors.pink[500] };
   };
 
   const handleAddSong = async (songData: Omit<Song, 'id' | 'addedAt' | 'votes' | 'addedBy'>) => {
@@ -91,9 +451,7 @@ export default function Dashboard() {
     try {
       setError(null);
       await deleteSong(songId);
-      // Remove from local state
       setSongs(prev => prev.filter(s => s.id !== songId));
-      // Remove votes if loaded
       setVotesMap(prev => {
         const newMap = { ...prev };
         delete newMap[songId];
@@ -107,195 +465,156 @@ export default function Dashboard() {
 
   if (authLoading || loadingSongs) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="glass rounded-3xl p-12 text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-500/30 border-t-purple-500 mx-auto"></div>
-            <p className="mt-6 text-slate-300 font-medium">Loading dashboard...</p>
-          </div>
-        </div>
-      </div>
+      <PageContainer>
+        <AnimatedBackground />
+        <ContentWrapper>
+          <LoadingContainer>
+            <Spinner />
+            <LoadingText>Loading dashboard...</LoadingText>
+          </LoadingContainer>
+        </ContentWrapper>
+      </PageContainer>
     );
   }
 
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 py-8 relative z-10">
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-              Dashboard
-            </h1>
-            <p className="text-slate-400">View all songs and their ratings</p>
-          </div>
+    <PageContainer>
+      <AnimatedBackground />
+      <ContentWrapper>
+        <Header>
+          <HeaderText>
+            <Heading1>Dashboard</Heading1>
+            <Subtitle>View all songs and their ratings</Subtitle>
+          </HeaderText>
           {user && (
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="px-6 py-2.5 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/50 active:scale-95"
-            >
+            <PrimaryButton onClick={() => setShowAddModal(true)}>
               + Add Song
-            </button>
+            </PrimaryButton>
           )}
-        </div>
+        </Header>
 
         {error && (
-          <div className="mb-6 glass border border-red-500/30 bg-red-500/10 px-4 py-3 rounded-xl flex items-center justify-between">
-            <span className="text-red-300">{error}</span>
-            <button
-              onClick={() => setError(null)}
-              className="text-red-400 hover:text-red-300 font-bold text-xl leading-none w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-500/20 transition-colors"
-            >
-              ×
-            </button>
-          </div>
+          <ErrorBanner>
+            <ErrorText>{error}</ErrorText>
+            <CloseErrorButton onClick={() => setError(null)}>×</CloseErrorButton>
+          </ErrorBanner>
         )}
 
-        {/* Songs Grid */}
         {songs.length === 0 ? (
-          <div className="glass rounded-3xl p-12 text-center glow">
-            <div className="text-6xl mb-6">🎼</div>
-            <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-              No Songs Yet
-            </h2>
-            <p className="text-slate-300 mb-8 text-lg">
-              Start adding songs to see them here!
-            </p>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="px-8 py-3.5 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/50 active:scale-95"
-            >
+          <EmptyState>
+            <EmptyIcon>🎼</EmptyIcon>
+            <Heading2>No Songs Yet</Heading2>
+            <EmptyText>Start adding songs to see them here!</EmptyText>
+            <PrimaryButton onClick={() => setShowAddModal(true)}>
               Add First Song
-            </button>
-          </div>
+            </PrimaryButton>
+          </EmptyState>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <SongsGrid>
             {songs.map((song) => {
               const votes = votesMap[song.id] || [];
               const isLoadingVotes = loadingVotes[song.id];
               const isOwner = user && song.userId === user.id;
+              const ratingColors = getRatingColor(song.votes.averageRating);
 
               return (
-                <div
-                  key={song.id}
-                  className="glass rounded-3xl overflow-hidden border border-white/10 hover:border-purple-500/30 transition-all duration-300 hover:scale-[1.02] glow"
-                >
-                  {/* Song Artwork */}
-                  <div className="relative h-48 bg-gradient-to-br from-purple-600 via-pink-600 to-cyan-600 overflow-hidden">
-                    <img
+                <SongTile key={song.id}>
+                  <ArtworkWrapper>
+                    <ArtworkImage
                       src={song.artwork}
                       alt={`${song.artist} - ${song.title}`}
-                      className="w-full h-full object-cover"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${song.youtubeId}/maxresdefault.jpg`;
                       }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                    <ArtworkOverlay />
                     {isOwner && (
-                      <button
+                      <TileDeleteButton
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDeleteSong(song.id);
                         }}
-                        className="absolute top-3 right-3 w-8 h-8 bg-red-500/90 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg z-10"
                         title="Delete song"
                       >
                         ×
-                      </button>
+                      </TileDeleteButton>
                     )}
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <h3 className="text-xl font-bold text-white mb-1 line-clamp-1">{song.title}</h3>
-                      <p className="text-slate-200 text-sm mb-1">{song.artist}</p>
-                      <p className="text-xs text-slate-300 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                    <ArtworkInfo>
+                      <SongTitle>{song.title}</SongTitle>
+                      <SongArtist>{song.artist}</SongArtist>
+                      <AddedByText>
+                        <Dot />
                         Added by {song.addedBy}
-                      </p>
-                    </div>
-                  </div>
+                      </AddedByText>
+                    </ArtworkInfo>
+                  </ArtworkWrapper>
 
-                  {/* Song Details */}
-                  <div className="p-6">
-                    {/* Rating Summary */}
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-semibold text-slate-400">Average Rating</span>
-                        <span className="text-xs text-slate-500">
+                  <TileContent>
+                    <RatingSection>
+                      <RatingHeader>
+                        <RatingLabel>Average Rating</RatingLabel>
+                        <VoteCount>
                           {song.votes.totalVotes} vote{song.votes.totalVotes !== 1 ? 's' : ''}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className={`flex-1 h-3 bg-slate-800 rounded-full overflow-hidden`}>
-                          <div
-                            className={`h-full bg-gradient-to-r ${getRatingColor(song.votes.averageRating)} transition-all duration-500`}
-                            style={{ width: `${(song.votes.averageRating / 10) * 100}%` }}
-                          ></div>
-                        </div>
-                        <span className={`text-2xl font-bold bg-gradient-to-r ${getRatingColor(song.votes.averageRating)} bg-clip-text text-transparent`}>
+                        </VoteCount>
+                      </RatingHeader>
+                      <RatingBar>
+                        <RatingBarFill
+                          $width={(song.votes.averageRating / 10) * 100}
+                          $from={ratingColors.from}
+                          $to={ratingColors.to}
+                        />
+                        <RatingValue $from={ratingColors.from} $to={ratingColors.to}>
                           {song.votes.averageRating > 0 ? song.votes.averageRating.toFixed(1) : '—'}
-                        </span>
-                      </div>
-                    </div>
+                        </RatingValue>
+                      </RatingBar>
+                    </RatingSection>
 
-                    {/* Expandable Votes Section */}
                     {song.votes.totalVotes > 0 && (
                       <div>
-                        <button
-                          onClick={() => loadVotesForSong(song.id)}
-                          className="w-full px-4 py-2 bg-slate-800/50 hover:bg-slate-800 text-slate-300 text-sm font-semibold rounded-xl transition-colors border border-white/10 mb-3"
-                        >
+                        <ExpandButton onClick={() => loadVotesForSong(song.id)}>
                           {isLoadingVotes ? 'Loading...' : votes.length > 0 ? `Hide ${votes.length} votes` : `View ${song.votes.totalVotes} vote${song.votes.totalVotes !== 1 ? 's' : ''}`}
-                        </button>
+                        </ExpandButton>
 
-                      {/* Votes List */}
-                      {votes.length > 0 && (
-                        <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-                          {votes.map((vote) => (
-                            <div
-                              key={vote.id}
-                              className="glass border border-white/5 rounded-xl p-4 hover:border-purple-500/20 transition-colors"
-                            >
-                              <div className="flex items-start justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xs font-bold text-white">
-                                    {vote.userName[0].toUpperCase()}
-                                  </div>
-                                  <span className="text-sm font-semibold text-white">{vote.userName}</span>
-                                </div>
-                                <div className={`px-2 py-1 rounded-lg bg-gradient-to-r ${getRatingColor(vote.rating)} text-white text-sm font-bold`}>
-                                  {vote.rating}/10
-                                </div>
-                              </div>
-                              {vote.comment && (
-                                <p className="text-sm text-slate-300 mt-2 pl-8">{vote.comment}</p>
-                              )}
-                              <p className="text-xs text-slate-500 mt-2 pl-8">
-                                {new Date(vote.timestamp).toLocaleDateString()}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                        {votes.length > 0 && (
+                          <VotesList>
+                            {votes.map((vote) => {
+                              const voteColors = getRatingColor(vote.rating);
+                              return (
+                                <VoteCard key={vote.id}>
+                                  <VoteHeader>
+                                    <VoteUser>
+                                      <UserAvatar>
+                                        {vote.userName[0].toUpperCase()}
+                                      </UserAvatar>
+                                      <UserName>{vote.userName}</UserName>
+                                    </VoteUser>
+                                    <VoteRating $from={voteColors.from} $to={voteColors.to}>
+                                      {vote.rating}/10
+                                    </VoteRating>
+                                  </VoteHeader>
+                                  {vote.comment && (
+                                    <VoteComment>{vote.comment}</VoteComment>
+                                  )}
+                                  <VoteDate>
+                                    {new Date(vote.timestamp).toLocaleDateString()}
+                                  </VoteDate>
+                                </VoteCard>
+                              );
+                            })}
+                          </VotesList>
+                        )}
                       </div>
                     )}
                     {song.votes.totalVotes === 0 && (
-                      <p className="text-sm text-slate-500 text-center py-4">
-                        No votes yet
-                      </p>
+                      <NoVotesText>No votes yet</NoVotesText>
                     )}
-                  </div>
-                </div>
+                  </TileContent>
+                </SongTile>
               );
             })}
-          </div>
+          </SongsGrid>
         )}
-      </div>
+      </ContentWrapper>
 
       <AuthModal
         isOpen={showAuthModal}
@@ -308,7 +627,6 @@ export default function Dashboard() {
           onAdd={handleAddSong}
         />
       )}
-    </div>
+    </PageContainer>
   );
 }
-

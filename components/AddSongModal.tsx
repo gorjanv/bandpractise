@@ -3,12 +3,83 @@
 import { useState } from 'react';
 import { extractYouTubeId, getYouTubeThumbnail } from '@/lib/youtube';
 import { Song } from '@/types';
+import styled from 'styled-components';
+import { ModalOverlay, GlassCard, Input, PrimaryButton, SecondaryButton, Heading2, Text } from '@/styles/styledComponents';
+import { theme } from '@/styles/theme';
 
 interface AddSongModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (song: Omit<Song, 'id' | 'addedAt' | 'votes' | 'addedBy'>) => Promise<void>;
 }
+
+const ModalContent = styled(GlassCard)`
+  max-width: 28rem;
+  width: 100%;
+  padding: 2rem;
+  box-shadow: ${theme.shadows.glow};
+`;
+
+const Header = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+`;
+
+const Icon = styled.div`
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: ${theme.borderRadius.xl};
+  background: linear-gradient(to bottom right, ${theme.colors.purple[500]}, ${theme.colors.pink[500]}, ${theme.colors.cyan[500]});
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const Label = styled.label`
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: ${theme.colors.slate[300]};
+  margin-bottom: 0.5rem;
+`;
+
+const HelpText = styled.p`
+  font-size: 0.75rem;
+  color: ${theme.colors.slate[500]};
+  margin: 0.5rem 0 0 0;
+`;
+
+const ErrorMessage = styled.div`
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: ${theme.colors.red[300]};
+  padding: 0.75rem 1rem;
+  border-radius: ${theme.borderRadius.xl};
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  
+  button {
+    flex: 1;
+  }
+`;
 
 export default function AddSongModal({ isOpen, onClose, onAdd }: AddSongModalProps) {
   const [youtubeUrl, setYoutubeUrl] = useState('');
@@ -45,7 +116,6 @@ export default function AddSongModal({ isOpen, onClose, onAdd }: AddSongModalPro
         youtubeId,
       });
 
-      // Reset form
       setYoutubeUrl('');
       setTitle('');
       setArtist('');
@@ -60,85 +130,57 @@ export default function AddSongModal({ isOpen, onClose, onAdd }: AddSongModalPro
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="glass rounded-3xl shadow-2xl border border-white/10 max-w-md w-full p-8 glow">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 via-pink-500 to-cyan-500 flex items-center justify-center">
-            <span className="text-xl">🎵</span>
-          </div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-            Add New Song
-          </h2>
-        </div>
+    <ModalOverlay>
+      <ModalContent>
+        <Header>
+          <Icon>🎵</Icon>
+          <Heading2>Add New Song</Heading2>
+        </Header>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">
-              YouTube URL
-            </label>
-            <input
+        <Form onSubmit={handleSubmit}>
+          <FormGroup>
+            <Label>YouTube URL</Label>
+            <Input
               type="text"
               value={youtubeUrl}
               onChange={(e) => setYoutubeUrl(e.target.value)}
               placeholder="https://youtube.com/watch?v=..."
-              className="w-full px-4 py-3 bg-slate-800/50 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
             />
-            <p className="text-xs text-slate-500 mt-2">
-              Paste any YouTube URL or video ID
-            </p>
-          </div>
+            <HelpText>Paste any YouTube URL or video ID</HelpText>
+          </FormGroup>
 
-          <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">
-              Song Title
-            </label>
-            <input
+          <FormGroup>
+            <Label>Song Title</Label>
+            <Input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter song title"
-              className="w-full px-4 py-3 bg-slate-800/50 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
             />
-          </div>
+          </FormGroup>
 
-          <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">
-              Artist
-            </label>
-            <input
+          <FormGroup>
+            <Label>Artist</Label>
+            <Input
               type="text"
               value={artist}
               onChange={(e) => setArtist(e.target.value)}
               placeholder="Enter artist name"
-              className="w-full px-4 py-3 bg-slate-800/50 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
             />
-          </div>
+          </FormGroup>
 
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-300 px-4 py-3 rounded-xl">
-              {error}
-            </div>
-          )}
+          {error && <ErrorMessage>{error}</ErrorMessage>}
 
-          <div className="flex gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-6 py-3 bg-slate-800/50 hover:bg-slate-800 text-slate-300 font-semibold rounded-xl transition-all duration-300 border border-white/10"
-            >
+          <ButtonGroup>
+            <SecondaryButton type="button" onClick={onClose}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
-            >
+            </SecondaryButton>
+            <PrimaryButton type="submit" disabled={isLoading}>
               {isLoading ? 'Adding...' : 'Add Song'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+            </PrimaryButton>
+          </ButtonGroup>
+        </Form>
+      </ModalContent>
+    </ModalOverlay>
   );
 }
-
