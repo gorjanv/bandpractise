@@ -3,83 +3,15 @@
 import { useState } from 'react';
 import { extractYouTubeId, getYouTubeThumbnail } from '@/lib/youtube';
 import { Song } from '@/types';
-import styled from 'styled-components';
-import { ModalOverlay, GlassCard, Input, PrimaryButton, SecondaryButton, Heading2, Text } from '@/styles/styledComponents';
-import { theme } from '@/styles/theme';
+import { ModalOverlay, Input, PrimaryButton, SecondaryButton } from '@/styles/styledComponents';
+import * as S from './shared/Modal.styled';
+import { ErrorMessage } from './shared/ErrorBanner.styled';
 
 interface AddSongModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (song: Omit<Song, 'id' | 'addedAt' | 'votes' | 'addedBy'>) => Promise<void>;
 }
-
-const ModalContent = styled(GlassCard)`
-  max-width: 28rem;
-  width: 100%;
-  padding: 2rem;
-  box-shadow: ${theme.shadows.glow};
-`;
-
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-`;
-
-const Icon = styled.div`
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: ${theme.borderRadius.xl};
-  background: linear-gradient(to bottom right, ${theme.colors.purple[500]}, ${theme.colors.pink[500]}, ${theme.colors.cyan[500]});
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-`;
-
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const Label = styled.label`
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: ${theme.colors.slate[300]};
-  margin-bottom: 0.5rem;
-`;
-
-const HelpText = styled.p`
-  font-size: 0.75rem;
-  color: ${theme.colors.slate[500]};
-  margin: 0.5rem 0 0 0;
-`;
-
-const ErrorMessage = styled.div`
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: ${theme.colors.red[300]};
-  padding: 0.75rem 1rem;
-  border-radius: ${theme.borderRadius.xl};
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 0.75rem;
-  padding-top: 1rem;
-  
-  button {
-    flex: 1;
-  }
-`;
 
 export default function AddSongModal({ isOpen, onClose, onAdd }: AddSongModalProps) {
   const [youtubeUrl, setYoutubeUrl] = useState('');
@@ -131,56 +63,56 @@ export default function AddSongModal({ isOpen, onClose, onAdd }: AddSongModalPro
 
   return (
     <ModalOverlay>
-      <ModalContent>
-        <Header>
-          <Icon>🎵</Icon>
-          <Heading2>Add New Song</Heading2>
-        </Header>
+      <S.ModalContent>
+        <S.ModalHeader>
+          <S.ModalIcon>🎵</S.ModalIcon>
+          <S.Heading2>Add New Song</S.Heading2>
+        </S.ModalHeader>
 
-        <Form onSubmit={handleSubmit}>
-          <FormGroup>
-            <Label>YouTube URL</Label>
+        <S.ModalForm onSubmit={handleSubmit}>
+          <S.FormGroup>
+            <S.FormLabel>YouTube URL</S.FormLabel>
             <Input
               type="text"
               value={youtubeUrl}
               onChange={(e) => setYoutubeUrl(e.target.value)}
               placeholder="https://youtube.com/watch?v=..."
             />
-            <HelpText>Paste any YouTube URL or video ID</HelpText>
-          </FormGroup>
+            <S.HelpText>Paste any YouTube URL or video ID</S.HelpText>
+          </S.FormGroup>
 
-          <FormGroup>
-            <Label>Song Title</Label>
+          <S.FormGroup>
+            <S.FormLabel>Song Title</S.FormLabel>
             <Input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter song title"
             />
-          </FormGroup>
+          </S.FormGroup>
 
-          <FormGroup>
-            <Label>Artist</Label>
+          <S.FormGroup>
+            <S.FormLabel>Artist</S.FormLabel>
             <Input
               type="text"
               value={artist}
               onChange={(e) => setArtist(e.target.value)}
               placeholder="Enter artist name"
             />
-          </FormGroup>
+          </S.FormGroup>
 
           {error && <ErrorMessage>{error}</ErrorMessage>}
 
-          <ButtonGroup>
+          <S.ButtonGroup>
             <SecondaryButton type="button" onClick={onClose}>
               Cancel
             </SecondaryButton>
             <PrimaryButton type="submit" disabled={isLoading}>
               {isLoading ? 'Adding...' : 'Add Song'}
             </PrimaryButton>
-          </ButtonGroup>
-        </Form>
-      </ModalContent>
+          </S.ButtonGroup>
+        </S.ModalForm>
+      </S.ModalContent>
     </ModalOverlay>
   );
 }

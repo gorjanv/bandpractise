@@ -2,89 +2,23 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import styled from 'styled-components';
-import { ModalOverlay, GlassCard, Input, PrimaryButton, SecondaryButton, Heading2 } from '@/styles/styledComponents';
+import { ModalOverlay, Input, PrimaryButton, SecondaryButton } from '@/styles/styledComponents';
+import * as S from './shared/Modal.styled';
+import { ErrorMessage } from './shared/ErrorBanner.styled';
 import { theme } from '@/styles/theme';
+import styled from 'styled-components';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose?: () => void;
 }
 
-const ModalContent = styled(GlassCard)`
-  max-width: 28rem;
-  width: 100%;
-  padding: 2rem;
-  box-shadow: ${theme.shadows.glow};
-`;
-
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-`;
-
-const Icon = styled.div`
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: ${theme.borderRadius.xl};
-  background: linear-gradient(to bottom right, ${theme.colors.purple[500]}, ${theme.colors.pink[500]}, ${theme.colors.cyan[500]});
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-`;
-
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const Label = styled.label`
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: ${theme.colors.slate[300]};
-  margin-bottom: 0.5rem;
-`;
-
-const HelpText = styled.p`
-  font-size: 0.75rem;
-  color: ${theme.colors.slate[500]};
-  margin: 0.5rem 0 0 0;
-`;
-
-const ErrorMessage = styled.div`
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: ${theme.colors.red[300]};
-  padding: 0.75rem 1rem;
-  border-radius: ${theme.borderRadius.xl};
-`;
-
 const SuccessMessage = styled.div`
   background: rgba(34, 211, 238, 0.1);
   border: 1px solid rgba(34, 211, 238, 0.3);
-  color: ${theme.colors.cyan[300]};
+  color: ${theme.colors.cyan[400]};
   padding: 0.75rem 1rem;
   border-radius: ${theme.borderRadius.xl};
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 0.75rem;
-  padding-top: 1rem;
-  
-  button {
-    flex: 1;
-  }
 `;
 
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
@@ -151,37 +85,37 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   return (
     <ModalOverlay>
-      <ModalContent>
-        <Header>
-          <Icon>🎵</Icon>
-          <Heading2>{isSignUp ? 'Create Account' : 'Sign In'}</Heading2>
-        </Header>
+      <S.ModalContent>
+        <S.ModalHeader>
+          <S.ModalIcon>🎵</S.ModalIcon>
+          <S.Heading2>{isSignUp ? 'Create Account' : 'Sign In'}</S.Heading2>
+        </S.ModalHeader>
 
-        <Form onSubmit={handleSubmit}>
+        <S.ModalForm onSubmit={handleSubmit}>
           {isSignUp && (
-            <FormGroup>
-              <Label>Name</Label>
+            <S.FormGroup>
+              <S.FormLabel>Name</S.FormLabel>
               <Input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your name"
               />
-            </FormGroup>
+            </S.FormGroup>
           )}
 
-          <FormGroup>
-            <Label>Email</Label>
+          <S.FormGroup>
+            <S.FormLabel>Email</S.FormLabel>
             <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
             />
-          </FormGroup>
+          </S.FormGroup>
 
-          <FormGroup>
-            <Label>Password</Label>
+          <S.FormGroup>
+            <S.FormLabel>Password</S.FormLabel>
             <Input
               type="password"
               value={password}
@@ -189,14 +123,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               placeholder="••••••••"
             />
             {isSignUp && (
-              <HelpText>Password must be at least 6 characters</HelpText>
+              <S.HelpText>Password must be at least 6 characters</S.HelpText>
             )}
-          </FormGroup>
+          </S.FormGroup>
 
           {error && <ErrorMessage>{error}</ErrorMessage>}
           {message && <SuccessMessage>{message}</SuccessMessage>}
 
-          <ButtonGroup>
+          <S.ButtonGroup>
             <SecondaryButton
               type="button"
               onClick={() => {
@@ -217,9 +151,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 ? 'Sign Up'
                 : 'Sign In'}
             </PrimaryButton>
-          </ButtonGroup>
-        </Form>
-      </ModalContent>
+          </S.ButtonGroup>
+        </S.ModalForm>
+      </S.ModalContent>
     </ModalOverlay>
   );
 }

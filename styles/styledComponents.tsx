@@ -9,10 +9,13 @@ export const Container = styled.div`
 `;
 
 export const PageContainer = styled.div`
-  min-height: 100vh;
+  height: 100vh;
   background: linear-gradient(to bottom right, ${theme.colors.background.gradient.from}, ${theme.colors.background.gradient.via}, ${theme.colors.background.gradient.to});
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-top: 73px; /* Navigation height - adjust if nav height changes */
+  box-sizing: border-box;
 `;
 
 export const AnimatedBackground = styled.div`

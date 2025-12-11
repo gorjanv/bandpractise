@@ -14,6 +14,7 @@
 html,
 body {
   height: 100%;
+  overflow: hidden; /* Prevent body from scrolling, let PageContainer handle it */
 }
 
 body {
@@ -26,4 +27,5 @@ body {
 
 #__next {
   height: 100%;
+  overflow: hidden; /* Prevent #__next from scrolling */
 }
