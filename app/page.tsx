@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [loadingSongs, setLoadingSongs] = useState(true);
   const [loadingVotes, setLoadingVotes] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
+  const [selectedSongId, setSelectedSongId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -47,12 +48,7 @@ export default function Dashboard() {
 
   const loadVotesForSong = async (songId: string) => {
     if (votesMap[songId]) {
-      setVotesMap(prev => {
-        const newMap = { ...prev };
-        delete newMap[songId];
-        return newMap;
-      });
-      return;
+      return; // Votes already loaded
     }
 
     try {
@@ -64,6 +60,11 @@ export default function Dashboard() {
     } finally {
       setLoadingVotes(prev => ({ ...prev, [songId]: false }));
     }
+  };
+
+  const handleSongSelect = (songId: string) => {
+    setSelectedSongId(songId);
+    loadVotesForSong(songId);
   };
 
   const getRatingColor = (rating: number) => {
@@ -100,6 +101,9 @@ export default function Dashboard() {
         delete newMap[songId];
         return newMap;
       });
+      if (selectedSongId === songId) {
+        setSelectedSongId(null);
+      }
     } catch (err: any) {
       console.error('Error deleting song:', err);
       setError(err.message || 'Failed to delete song');
@@ -124,13 +128,6 @@ export default function Dashboard() {
     <PageContainer>
       <AnimatedBackground />
       <S.ContentWrapper>
-        <S.Header>
-          <S.HeaderText>
-            <S.Heading1>Dashboard</S.Heading1>
-            <S.Subtitle>View all songs and their ratings</S.Subtitle>
-          </S.HeaderText>
-        </S.Header>
-
         {error && (
           <S.ErrorBanner>
             <S.ErrorText>{error}</S.ErrorText>
@@ -145,109 +142,159 @@ export default function Dashboard() {
             <S.EmptyText>Start adding songs to see them here!</S.EmptyText>
           </S.EmptyState>
         ) : (
-          <S.SongsGrid>
-            {songs.map((song) => {
-              const votes = votesMap[song.id] || [];
-              const isLoadingVotes = loadingVotes[song.id];
-              const isOwner = user && song.userId === user.id;
-              const ratingColors = getRatingColor(song.votes.averageRating);
-
-              return (
-                <S.SongTile key={song.id}>
-                  <S.ArtworkWrapper>
-                    <S.ArtworkImage
-                      src={song.artwork}
-                      alt={`${song.artist} - ${song.title}`}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${song.youtubeId}/maxresdefault.jpg`;
-                      }}
-                    />
-                    <S.ArtworkOverlay />
-                    {isOwner && (
-                      <S.TileDeleteButton
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteSong(song.id);
-                        }}
-                        title="Delete song"
-                      >
-                        ×
-                      </S.TileDeleteButton>
-                    )}
-                    <S.ArtworkInfo>
-                      <S.SongTitle>{song.title}</S.SongTitle>
-                      <S.SongArtist>{song.artist}</S.SongArtist>
-                      <S.AddedByText>
-                        <S.Dot />
-                        Added by {song.addedBy}
-                      </S.AddedByText>
-                    </S.ArtworkInfo>
-                  </S.ArtworkWrapper>
-
-                  <S.TileContent>
-                    <S.RatingSection>
-                      <S.RatingHeader>
-                        <S.RatingLabel>Average Rating</S.RatingLabel>
-                        <S.VoteCount>
-                          {song.votes.totalVotes} vote{song.votes.totalVotes !== 1 ? 's' : ''}
-                        </S.VoteCount>
-                      </S.RatingHeader>
-                      <S.RatingBar>
-                        <S.RatingBarFill
-                          $width={(song.votes.averageRating / 10) * 100}
-                          $from={ratingColors.from}
-                          $to={ratingColors.to}
-                        />
-                        <S.RatingValue $from={ratingColors.from} $to={ratingColors.to}>
-                          {song.votes.averageRating > 0 ? song.votes.averageRating.toFixed(1) : '—'}
-                        </S.RatingValue>
-                      </S.RatingBar>
-                    </S.RatingSection>
-
-                    {song.votes.totalVotes > 0 && (
-                      <div>
-                        <S.ExpandButton onClick={() => loadVotesForSong(song.id)}>
-                          {isLoadingVotes ? 'Loading...' : votes.length > 0 ? `Hide ${votes.length} votes` : `View ${song.votes.totalVotes} vote${song.votes.totalVotes !== 1 ? 's' : ''}`}
-                        </S.ExpandButton>
-
-                        {votes.length > 0 && (
-                          <S.VotesList>
-                            {votes.map((vote) => {
-                              const voteColors = getRatingColor(vote.rating);
-                              return (
-                                <S.VoteCard key={vote.id}>
-                                  <S.VoteHeader>
-                                    <S.VoteUser>
-                                      <S.UserAvatar>
-                                        {vote.userName[0].toUpperCase()}
-                                      </S.UserAvatar>
-                                      <S.UserName>{vote.userName}</S.UserName>
-                                    </S.VoteUser>
-                                    <S.VoteRating $from={voteColors.from} $to={voteColors.to}>
-                                      {vote.rating}/10
-                                    </S.VoteRating>
-                                  </S.VoteHeader>
-                                  {vote.comment && (
-                                    <S.VoteComment>{vote.comment}</S.VoteComment>
-                                  )}
-                                  <S.VoteDate>
-                                    {new Date(vote.timestamp).toLocaleDateString()}
-                                  </S.VoteDate>
-                                </S.VoteCard>
-                              );
-                            })}
-                          </S.VotesList>
+          <S.MainLayout>
+            <S.Sidebar>
+              <S.SidebarTitle>Songs ({songs.length})</S.SidebarTitle>
+              <S.SongList>
+                {songs.map((song) => {
+                  const isSelected = selectedSongId === song.id;
+                  return (
+                    <S.SongListItem
+                      key={song.id}
+                      onClick={() => handleSongSelect(song.id)}
+                      $isSelected={isSelected}
+                    >
+                      <S.SongListContent>
+                        <S.SongListTitle>{song.title}</S.SongListTitle>
+                        <S.SongListArtist>{song.artist}</S.SongListArtist>
+                        {song.votes.totalVotes > 0 && (
+                          <S.SongListRating>
+                            Avg: {song.votes.averageRating.toFixed(1)}/10
+                            <S.SongListVoteCount>
+                              ({song.votes.totalVotes} vote{song.votes.totalVotes !== 1 ? 's' : ''})
+                            </S.SongListVoteCount>
+                          </S.SongListRating>
                         )}
-                      </div>
-                    )}
-                    {song.votes.totalVotes === 0 && (
-                      <S.NoVotesText>No votes yet</S.NoVotesText>
-                    )}
-                  </S.TileContent>
-                </S.SongTile>
-              );
-            })}
-          </S.SongsGrid>
+                      </S.SongListContent>
+                    </S.SongListItem>
+                  );
+                })}
+              </S.SongList>
+            </S.Sidebar>
+
+            <S.MainContent>
+              {selectedSongId ? (
+                (() => {
+                  const song = songs.find(s => s.id === selectedSongId);
+                  if (!song) return null;
+                  const votes = votesMap[song.id] || [];
+                  const isLoadingVotes = loadingVotes[song.id];
+                  const isOwner = user && song.userId === user.id;
+                  const ratingColors = getRatingColor(song.votes.averageRating);
+                  return (
+                    <S.SongTile key={song.id}>
+                      <S.ArtworkWrapper>
+                        <S.ArtworkImage
+                          src={song.artwork}
+                          alt={`${song.artist} - ${song.title}`}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${song.youtubeId}/maxresdefault.jpg`;
+                          }}
+                        />
+                        <S.ArtworkOverlay />
+                        {isOwner && (
+                          <S.TileDeleteButton
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteSong(song.id);
+                            }}
+                            title="Delete song"
+                          >
+                            ×
+                          </S.TileDeleteButton>
+                        )}
+                        <S.ArtworkInfo>
+                          <S.SongTitle>{song.title}</S.SongTitle>
+                          <S.SongArtist>{song.artist}</S.SongArtist>
+                          <S.AddedByText>
+                            <S.Dot />
+                            Added by {song.addedBy}
+                          </S.AddedByText>
+                        </S.ArtworkInfo>
+                      </S.ArtworkWrapper>
+
+                      <S.TileContent>
+                        <S.VideoContainer>
+                          <S.VideoIframe
+                            src={`https://www.youtube.com/embed/${song.youtubeId}?rel=0`}
+                            title={song.title}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </S.VideoContainer>
+                        <S.RatingSection>
+                          <S.RatingHeader>
+                            <S.RatingLabel>Average Rating</S.RatingLabel>
+                            <S.VoteCount>
+                              {song.votes.totalVotes} vote{song.votes.totalVotes !== 1 ? 's' : ''}
+                            </S.VoteCount>
+                          </S.RatingHeader>
+                          <S.RatingBar>
+                            <S.RatingBarFill
+                              $width={(song.votes.averageRating / 10) * 100}
+                              $from={ratingColors.from}
+                              $to={ratingColors.to}
+                            />
+                            <S.RatingValue $from={ratingColors.from} $to={ratingColors.to}>
+                              {song.votes.averageRating > 0 ? song.votes.averageRating.toFixed(1) : '—'}
+                            </S.RatingValue>
+                          </S.RatingBar>
+                        </S.RatingSection>
+
+                        {song.votes.totalVotes > 0 && (
+                          <div>
+                            {isLoadingVotes ? (
+                              <S.LoadingText>Loading votes...</S.LoadingText>
+                            ) : votes.length > 0 ? (
+                              <S.VotesList>
+                                {votes.map((vote) => {
+                                  const voteColors = getRatingColor(vote.rating);
+                                  return (
+                                    <S.VoteCard key={vote.id}>
+                                      <S.VoteHeader>
+                                        <S.VoteUser>
+                                          <S.UserAvatar>
+                                            {vote.userName[0].toUpperCase()}
+                                          </S.UserAvatar>
+                                          <S.UserName>{vote.userName}</S.UserName>
+                                        </S.VoteUser>
+                                        <S.VoteRating $from={voteColors.from} $to={voteColors.to}>
+                                          {vote.rating}/10
+                                        </S.VoteRating>
+                                      </S.VoteHeader>
+                                      {vote.comment && (
+                                        <S.VoteComment>{vote.comment}</S.VoteComment>
+                                      )}
+                                      <S.VoteDate>
+                                        {new Date(vote.timestamp).toLocaleDateString()}
+                                      </S.VoteDate>
+                                    </S.VoteCard>
+                                  );
+                                })}
+                              </S.VotesList>
+                            ) : (
+                              <S.NoVotesText>No votes yet</S.NoVotesText>
+                            )}
+                          </div>
+                        )}
+                        {song.votes.totalVotes === 0 && (
+                          <S.NoVotesText>No votes yet</S.NoVotesText>
+                        )}
+                      </S.TileContent>
+                    </S.SongTile>
+                  );
+                })()
+              ) : (
+                <S.SelectSongPrompt>
+                  <S.PromptContent>
+                    <S.PromptIcon>🎵</S.PromptIcon>
+                    <S.Heading3>Select a Song</S.Heading3>
+                    <S.PromptText>Choose a song from the list to see the details</S.PromptText>
+                  </S.PromptContent>
+                </S.SelectSongPrompt>
+              )}
+            </S.MainContent>
+          </S.MainLayout>
         )}
       </S.ContentWrapper>
 

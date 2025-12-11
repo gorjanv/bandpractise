@@ -3,7 +3,7 @@ import { theme } from '@/styles/theme';
 
 export const ArtworkWrapper = styled.div`
   position: relative;
-  height: 12rem;
+  height: 8rem;
   background: linear-gradient(to bottom right, ${theme.colors.purple[600]}, ${theme.colors.pink[600]}, ${theme.colors.cyan[600]});
   overflow: hidden;
 `;
