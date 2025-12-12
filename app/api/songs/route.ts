@@ -171,7 +171,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const newSong = dbSongToSong(songData as DBSong, { averageRating: 0, totalVotes: 0 });
+    // Fetch the versions we just inserted to include in the response
+    const { data: songVersions } = await supabase
+      .from('song_versions')
+      .select('*')
+      .eq('song_id', songData.id)
+      .order('position', { ascending: true });
+
+    const versionsArray = (songVersions || []).map((v: any) => ({
+      id: v.id,
+      youtubeUrl: v.youtube_url,
+      youtubeId: v.youtube_id,
+      performedBy: v.performed_by,
+      position: v.position,
+    }));
+
+    const newSong = dbSongToSong(songData as DBSong, { averageRating: 0, totalVotes: 0 }, versionsArray.length > 0 ? versionsArray : undefined);
     return NextResponse.json(newSong, { status: 201 });
   } catch (error) {
     console.error('Error creating song:', error);
