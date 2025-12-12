@@ -1,4 +1,4 @@
-import { Song, VoteWithDetails, Setlist } from '@/types';
+import { Song, VoteWithDetails, Setlist, SongInput } from '@/types';
 import { supabase } from '@/lib/supabase';
 
 const API_BASE = '/api';
@@ -25,7 +25,7 @@ export async function fetchSongs(): Promise<Song[]> {
 }
 
 // Add a new song
-export async function addSong(song: Omit<Song, 'id' | 'addedAt' | 'votes' | 'addedBy'>): Promise<Song> {
+export async function addSong(song: SongInput): Promise<Song> {
   const headers = await getAuthHeaders();
   
   const response = await fetch(API_BASE + '/songs', {
@@ -37,6 +37,7 @@ export async function addSong(song: Omit<Song, 'id' | 'addedAt' | 'votes' | 'add
       artwork: song.artwork,
       youtubeUrl: song.youtubeUrl,
       youtubeId: song.youtubeId,
+      versions: song.versions,
     }),
   });
 
@@ -143,10 +144,10 @@ export async function getUserVoteForSong(songId: string): Promise<{ rating: numb
   }
 }
 
-// Delete a song (only if user is the owner)
+// Update a song (only if user is the owner)
 export async function updateSong(
   songId: string,
-  song: Omit<Song, 'id' | 'addedAt' | 'votes' | 'addedBy'>
+  song: SongInput
 ): Promise<Song> {
   const headers = await getAuthHeaders();
   
@@ -159,6 +160,7 @@ export async function updateSong(
       artwork: song.artwork,
       youtubeUrl: song.youtubeUrl,
       youtubeId: song.youtubeId,
+      versions: song.versions,
     }),
   });
 

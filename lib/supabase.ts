@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { Song, Vote } from '@/types';
+import { Song, Vote, SongVersion } from '@/types';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -43,7 +43,11 @@ export interface DBVote {
 }
 
 // Convert DB song to app song format
-export function dbSongToSong(dbSong: DBSong, votes: { averageRating: number; totalVotes: number }): Song {
+export function dbSongToSong(
+  dbSong: DBSong, 
+  votes: { averageRating: number; totalVotes: number },
+  versions?: SongVersion[]
+): Song {
   return {
     id: dbSong.id,
     title: dbSong.title,
@@ -54,6 +58,7 @@ export function dbSongToSong(dbSong: DBSong, votes: { averageRating: number; tot
     addedBy: dbSong.added_by_name || dbSong.added_by || 'Unknown',
     addedAt: dbSong.added_at,
     userId: dbSong.user_id || null,
+    versions: versions && versions.length > 0 ? versions : undefined,
     votes,
   };
 }

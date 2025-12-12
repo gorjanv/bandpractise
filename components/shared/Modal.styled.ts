@@ -62,6 +62,57 @@ export const ButtonGroup = styled.div`
   }
 `;
 
+export const VersionDivider = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 1.5rem 0 1rem 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid ${theme.colors.glass.border};
+`;
+
+export const VersionLabel = styled(FormLabel)`
+  margin: 0;
+  font-size: 0.875rem;
+  color: ${theme.colors.slate[400]};
+`;
+
+export const RemoveVersionButton = styled.button`
+  background: none;
+  border: none;
+  color: ${theme.colors.red[400]};
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: ${theme.borderRadius.md};
+  transition: all ${theme.transitions.normal} ease;
+  
+  &:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: ${theme.colors.red[300]};
+  }
+`;
+
+export const AddVersionButton = styled.button`
+  background: none;
+  border: 1px dashed ${theme.colors.glass.border};
+  color: ${theme.colors.purple[400]};
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.75rem 1rem;
+  border-radius: ${theme.borderRadius.xl};
+  transition: all ${theme.transitions.normal} ease;
+  width: 100%;
+  margin-top: 0.5rem;
+  
+  &:hover {
+    background: rgba(168, 85, 247, 0.1);
+    border-color: ${theme.colors.purple[500]};
+    color: ${theme.colors.purple[300]};
+  }
+`;
+
 export { Heading2 };
 
 

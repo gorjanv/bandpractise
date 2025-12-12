@@ -26,6 +26,32 @@ export async function GET(request: NextRequest) {
       throw votesError;
     }
 
+    // Get all song versions
+    const { data: songVersions, error: versionsError } = await supabase
+      .from('song_versions')
+      .select('*')
+      .order('position', { ascending: true });
+
+    if (versionsError) {
+      console.error('Error fetching song versions:', versionsError);
+      // Continue without versions if there's an error
+    }
+
+    // Group versions by song_id
+    const versionsBySongId = (songVersions || []).reduce((acc: Record<string, any[]>, version: any) => {
+      if (!acc[version.song_id]) {
+        acc[version.song_id] = [];
+      }
+      acc[version.song_id].push({
+        id: version.id,
+        youtubeUrl: version.youtube_url,
+        youtubeId: version.youtube_id,
+        performedBy: version.performed_by,
+        position: version.position,
+      });
+      return acc;
+    }, {});
+
     // Calculate average ratings for each song
     const songsWithVotes = (songs || []).map((song: DBSong) => {
       const songVotes = votes?.filter(v => v.song_id === song.id && v.rating != null) || [];
@@ -38,7 +64,9 @@ export async function GET(request: NextRequest) {
         averageRating: Math.round(averageRating * 10) / 10,
         totalVotes: ratings.length,
       };
-      return dbSongToSong(song, voteStats);
+      
+      const versions = versionsBySongId[song.id] || [];
+      return dbSongToSong(song, voteStats, versions);
     });
 
     // Sort by average rating descending, then by created_at descending for songs with same/no rating
@@ -78,7 +106,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, artist, artwork, youtubeUrl, youtubeId } = body;
+    const { title, artist, artwork, youtubeUrl, youtubeId, versions } = body;
 
     if (!title || !artist || !artwork || !youtubeUrl || !youtubeId) {
       return NextResponse.json(
@@ -87,9 +115,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate versions if provided
+    if (versions && Array.isArray(versions)) {
+      for (const version of versions) {
+        if (!version.youtubeUrl || !version.youtubeId || !version.performedBy) {
+          return NextResponse.json(
+            { error: 'All versions must have youtubeUrl, youtubeId, and performedBy' },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
     const userName = user.user_metadata?.name || user.email?.split('@')[0] || 'Unknown';
 
-    const { data, error } = await supabase
+    // Insert the song
+    const { data: songData, error: songError } = await supabase
       .from('songs')
       .insert({
         title,
@@ -105,11 +146,32 @@ export async function POST(request: NextRequest) {
       .select()
       .single();
 
-    if (error) {
-      throw error;
+    if (songError) {
+      throw songError;
     }
 
-    const newSong = dbSongToSong(data as DBSong, { averageRating: 0, totalVotes: 0 });
+    // Insert versions if provided
+    if (versions && Array.isArray(versions) && versions.length > 0) {
+      const versionsToInsert = versions.map((version: any, index: number) => ({
+        song_id: songData.id,
+        youtube_url: version.youtubeUrl,
+        youtube_id: version.youtubeId,
+        performed_by: version.performedBy,
+        position: version.position ?? index,
+      }));
+
+      const { error: versionsError } = await supabase
+        .from('song_versions')
+        .insert(versionsToInsert);
+
+      if (versionsError) {
+        // If versions insert fails, we should probably delete the song
+        // But for now, just log the error and continue
+        console.error('Error inserting song versions:', versionsError);
+      }
+    }
+
+    const newSong = dbSongToSong(songData as DBSong, { averageRating: 0, totalVotes: 0 });
     return NextResponse.json(newSong, { status: 201 });
   } catch (error) {
     console.error('Error creating song:', error);

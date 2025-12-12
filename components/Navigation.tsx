@@ -22,7 +22,6 @@ export default function Navigation() {
 
   const navItems = [
     { href: '/', label: 'Dashboard', icon: '📊' },
-    { href: '/vote', label: 'Vote', icon: '🎵' },
     { href: '/setlists', label: 'Setlists', icon: '📋' },
   ];
 

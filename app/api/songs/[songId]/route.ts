@@ -44,13 +44,25 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { title, artist, artwork, youtubeUrl, youtubeId } = body;
+    const { title, artist, artwork, youtubeUrl, youtubeId, versions } = body;
 
     if (!title || !artist || !artwork || !youtubeUrl || !youtubeId) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
+    }
+
+    // Validate versions if provided
+    if (versions && Array.isArray(versions)) {
+      for (const version of versions) {
+        if (!version.youtubeUrl || !version.youtubeId || !version.performedBy) {
+          return NextResponse.json(
+            { error: 'All versions must have youtubeUrl, youtubeId, and performedBy' },
+            { status: 400 }
+          );
+        }
+      }
     }
 
     // Update the song
@@ -112,12 +124,55 @@ export async function PATCH(
       ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length
       : 0;
 
+    // Handle versions: delete old ones and insert new ones
+    if (versions && Array.isArray(versions)) {
+      // Delete existing versions
+      await supabase
+        .from('song_versions')
+        .delete()
+        .eq('song_id', songId);
+
+      // Insert new versions if any
+      if (versions.length > 0) {
+        const versionsToInsert = versions.map((version: any, index: number) => ({
+          song_id: songId,
+          youtube_url: version.youtubeUrl,
+          youtube_id: version.youtubeId,
+          performed_by: version.performedBy,
+          position: version.position ?? index,
+        }));
+
+        const { error: versionsError } = await supabase
+          .from('song_versions')
+          .insert(versionsToInsert);
+
+        if (versionsError) {
+          console.error('Error updating song versions:', versionsError);
+        }
+      }
+    }
+
+    // Get updated versions for the response
+    const { data: songVersions } = await supabase
+      .from('song_versions')
+      .select('*')
+      .eq('song_id', songId)
+      .order('position', { ascending: true });
+
+    const versionsArray = (songVersions || []).map((v: any) => ({
+      id: v.id,
+      youtubeUrl: v.youtube_url,
+      youtubeId: v.youtube_id,
+      performedBy: v.performed_by,
+      position: v.position,
+    }));
+
     const voteStats = {
       averageRating: Math.round(averageRating * 10) / 10,
       totalVotes: ratings.length,
     };
 
-    const result = dbSongToSong(updatedSong as DBSong, voteStats);
+    const result = dbSongToSong(updatedSong as DBSong, voteStats, versionsArray.length > 0 ? versionsArray : undefined);
     return NextResponse.json(result);
   } catch (error: any) {
     console.error('Error in PATCH /api/songs/[songId]:', error);
