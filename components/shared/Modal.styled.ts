@@ -109,7 +109,7 @@ export const AddVersionButton = styled.button`
   &:hover {
     background: rgba(168, 85, 247, 0.1);
     border-color: ${theme.colors.purple[500]};
-    color: ${theme.colors.purple[300]};
+    color: ${theme.colors.purple[400]};
   }
 `;
 

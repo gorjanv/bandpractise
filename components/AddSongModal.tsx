@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { extractYouTubeId, getYouTubeThumbnail } from '@/lib/youtube';
-import { SongInput } from '@/types';
 import { ModalOverlay, Input, PrimaryButton, SecondaryButton } from '@/styles/styledComponents';
 import * as S from './shared/Modal.styled';
 import { ErrorMessage } from './shared/ErrorBanner.styled';
