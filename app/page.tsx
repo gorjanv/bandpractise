@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Song, VoteWithDetails, SongInput } from '@/types';
-import { fetchSongs, getSongVotesWithDetails, deleteSong, addSong, updateSong, submitVote, getUserVoteForSong } from '@/lib/api';
+import { fetchSongs, getSongVotesWithDetails, deleteSong, addSong, updateSong, submitVote, getAllUserVotes } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAddSongModal } from '@/contexts/AddSongModalContext';
 import AuthModal from '@/components/AuthModal';
@@ -46,28 +46,25 @@ export default function Dashboard() {
       const loadedSongs = await fetchSongs();
       setSongs(loadedSongs);
       
-      // Load user ratings for all songs
+      // Load user ratings for all songs in a single request
       if (user) {
-        const ratings: Record<string, number> = {};
-        const comments: Record<string, string> = {};
-        
-        // Load user votes for all songs in parallel
-        const votePromises = loadedSongs.map(async (song) => {
-          try {
-            const userVote = await getUserVoteForSong(song.id);
-            if (userVote) {
-              ratings[song.id] = userVote.rating;
-              comments[song.id] = userVote.comment || '';
-            }
-          } catch (err) {
-            // Silently fail for individual songs
-            console.error(`Error loading vote for song ${song.id}:`, err);
-          }
-        });
-        
-        await Promise.all(votePromises);
-        setUserRatings(prev => ({ ...prev, ...ratings }));
-        setUserComments(prev => ({ ...prev, ...comments }));
+        try {
+          const allUserVotes = await getAllUserVotes();
+          const ratings: Record<string, number> = {};
+          const comments: Record<string, string> = {};
+          
+          // Map user votes to ratings and comments
+          Object.entries(allUserVotes).forEach(([songId, vote]) => {
+            ratings[songId] = vote.rating;
+            comments[songId] = vote.comment || '';
+          });
+          
+          setUserRatings(prev => ({ ...prev, ...ratings }));
+          setUserComments(prev => ({ ...prev, ...comments }));
+        } catch (err) {
+          console.error('Error loading user votes:', err);
+          // Continue without user votes - not critical
+        }
       }
     } catch (err) {
       console.error('Error loading songs:', err);
@@ -113,23 +110,13 @@ export default function Dashboard() {
     }
     // Initialize tab to 'current' (default)
     setActiveTab(prev => ({ ...prev, [songId]: 'current' }));
-    // Load user's existing vote if any
+    // Initialize user vote state if not already loaded
     if (user) {
-      try {
-        const userVote = await getUserVoteForSong(songId);
-        if (userVote) {
-          setUserRatings(prev => ({ ...prev, [songId]: userVote.rating }));
-          setUserComments(prev => ({ ...prev, [songId]: userVote.comment || '' }));
-        } else {
-          // Initialize with default values if no vote exists
-          setUserRatings(prev => ({ ...prev, [songId]: 5 }));
-          setUserComments(prev => ({ ...prev, [songId]: '' }));
-        }
-      } catch (err) {
-        console.error('Error loading user vote:', err);
-        // Initialize with default values on error
-        setUserRatings(prev => ({ ...prev, [songId]: 5 }));
-        setUserComments(prev => ({ ...prev, [songId]: '' }));
+      if (!userRatings[songId]) {
+        // If not in state, check if we need to load it (should already be loaded from loadSongs)
+        // Otherwise initialize with default values
+        setUserRatings(prev => ({ ...prev, [songId]: prev[songId] ?? 5 }));
+        setUserComments(prev => ({ ...prev, [songId]: prev[songId] ?? '' }));
       }
     }
   };

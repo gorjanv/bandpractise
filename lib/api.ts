@@ -107,6 +107,26 @@ export async function getSongVotes(songId: string): Promise<{ averageRating: num
   return response.json();
 }
 
+// Get all user's votes (for all songs)
+export async function getAllUserVotes(): Promise<Record<string, { rating: number; comment?: string }>> {
+  try {
+    const headers = await getAuthHeaders();
+    
+    const response = await fetch(API_BASE + '/votes/user', {
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch user votes');
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('Error fetching user votes:', error);
+    return {};
+  }
+}
+
 // Get user's vote for a specific song
 export async function getUserVoteForSong(songId: string): Promise<{ rating: number; comment?: string } | null> {
   try {
